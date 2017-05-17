@@ -19,7 +19,7 @@ dependencies {
 ```
 - Step 3. 初始化
 ```
-Youtu.initSDK("appid", "appkey", "secret");
+Youtu.initSDK("appid", "secret_id", "secret_key");
 ```
 - Step 4.识别
 
