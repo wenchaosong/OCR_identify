@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.tv_identify).setOnClickListener(this);
 
-        Youtu.initSDK("10079696", "AKIDKlJvdRYJQUgy1ArUdklr0EXwRrFbdLlC", "w09siGi8Sho061lFbqvpcEfYL0UmvwnS");
+        Youtu.initSDK("10083087", "AKID8KtJahEV9bzDGKwbjgS5WpzznSwSnc7b", "lNn493nMjxzoRtDMI2beXGn8JI8mExb3");
 
         mDialog = new ACProgressFlower.Builder(MainActivity.this)
                 .direction(ACProgressConstant.DIRECT_CLOCKWISE)
