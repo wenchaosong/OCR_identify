@@ -14,7 +14,7 @@ repositories {
 - Step 2. 在你的app build.gradle 的 dependencies 中添加依赖
 ```
 dependencies {
-	compile 'com.github.wenchaosong:SwipeToLoad:1.0.0'
+	compile 'com.github.wenchaosong:OCR_identify:1.0.0'
 }
 ```
 - Step 3. 初始化
