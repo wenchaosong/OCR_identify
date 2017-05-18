@@ -2,7 +2,6 @@ package com.ocr;
 
 import android.Manifest;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +15,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.identify.Youtu;
+import com.luck.picture.lib.model.FunctionConfig;
+import com.luck.picture.lib.model.FunctionOptions;
+import com.luck.picture.lib.model.PictureConfig;
+import com.yalantis.ucrop.entity.LocalMedia;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,8 +32,6 @@ import java.util.List;
 
 import cc.cloudist.acplibrary.ACProgressConstant;
 import cc.cloudist.acplibrary.ACProgressFlower;
-import me.nereo.multi_image_selector.MultiImageSelector;
-import me.nereo.multi_image_selector.MultiImageSelectorActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -60,35 +61,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .textSize(18)
                 .textMarginTop(10)
                 .fadeColor(Color.DKGRAY).build();
+
+        FunctionOptions options = new FunctionOptions.Builder()
+                .setType(FunctionConfig.TYPE_IMAGE) // 图片or视频 FunctionConfig.TYPE_IMAGE  TYPE_VIDEO
+                .setCompress(true) //是否压缩
+                .setSelectMode(FunctionConfig.MODE_SINGLE)
+                .create();
+        PictureConfig.getInstance().init(options);
     }
 
     /**
      * select picture
      */
     private void selectImage() {
-        MultiImageSelector.create(MainActivity.this)
-                .showCamera(true) // 是否显示相机. 默认为显示
-//                .count(1) // 最大选择图片数量, 默认为9. 只有在选择模式为多选时有效
-                .single() // 单选模式
-//                .multi() // 多选模式, 默认模式;
-//                .origin(ArrayList<String>) // 默认已选择图片. 只有在选择模式为多选时有效
-                .start(MainActivity.this, REQUEST_IMAGE);
-    }
+        PictureConfig.getInstance().openPhoto(this, new PictureConfig.OnSelectResultCallback() {
+            @Override
+            public void onSelectSuccess(List<LocalMedia> list) {
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE) {
-            if (resultCode == RESULT_OK) {
-                // 获取返回的图片列表
-                List<String> path = data.getStringArrayListExtra(MultiImageSelectorActivity.EXTRA_RESULT);
-                // 处理你自己的逻辑 ....
-                if (path != null && path.size() > 0) {
-                    bitmap = getImage(path.get(0));
-                    imageView.setImageBitmap(bitmap);
-                }
             }
-        }
+
+            @Override
+            public void onSelectSuccess(LocalMedia localMedia) {
+
+                bitmap = getImage(localMedia.getPath());
+                imageView.setImageBitmap(bitmap);
+            }
+        });
     }
 
     /**
