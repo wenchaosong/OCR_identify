@@ -7,5 +7,11 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-
+    <style name="result_pop_scroll">
+         <item name="android:background">@color/colorWhite</item>
+    </style>
+    <style name="result_pop_scrollinner">
+        <item name="android:padding">@dimen/result_pop_padding</item>
+        <item name="android:rowHeight">12dp</item>
+    </style>
 </resources>

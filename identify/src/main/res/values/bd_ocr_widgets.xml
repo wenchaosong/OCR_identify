@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+  -->
+<resources>
+    <declare-styleable name="OCRCameraLayout">
+        <attr name="contentView" format="reference"/>
+        <attr name="centerView" format="reference"/>
+        <attr name="leftDownView" format="reference"/>
+        <attr name="rightUpView" format="reference"/>
+    </declare-styleable>
+</resources>

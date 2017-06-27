@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+  -->
+<com.baidu.ocr.ui.camera.OCRCameraLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:contentView="@+id/crop_view_container"
+        app:leftDownView="@+id/cancel_button"
+        app:centerView="@+id/rotate_button"
+        app:rightUpView="@+id/confirm_button">
+
+    <com.baidu.ocr.ui.camera.OCRFrameLayout
+            android:id="@+id/crop_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <com.baidu.ocr.ui.crop.CropView
+                android:id="@+id/crop_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <com.baidu.ocr.ui.crop.FrameOverlayView
+                android:id="@+id/overlay_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <com.baidu.ocr.ui.camera.MaskView
+                android:id="@+id/crop_mask_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+    </com.baidu.ocr.ui.camera.OCRFrameLayout>
+
+    <ImageView
+            android:id="@+id/rotate_button"
+            android:layout_width="60dp"
+            android:layout_height="58dp"
+            android:padding="18dp"
+            android:src="@drawable/bd_ocr_rotate"/>
+
+    <ImageView
+            android:id="@+id/confirm_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:padding="12dp"
+            android:src="@drawable/bd_ocr_confirm"
+            android:layout_marginRight="@dimen/camera_right_margin"
+            android:layout_marginEnd="@dimen/camera_right_margin"
+            android:layout_marginTop="@dimen/camera_top_margin"/>
+
+    <ImageView
+            android:id="@+id/cancel_button"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:padding="12dp"
+            android:src="@drawable/bd_ocr_cancel"
+            android:layout_marginLeft="@dimen/camera_left_margin"
+            android:layout_marginStart="@dimen/camera_left_margin"
+            android:layout_marginBottom="@dimen/camera_bottom_margin"/>
+
+</com.baidu.ocr.ui.camera.OCRCameraLayout>
