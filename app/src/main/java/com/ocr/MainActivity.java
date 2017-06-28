@@ -72,10 +72,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Toast.makeText(MainActivity.this, "AK，SK方式获取token失败", Toast.LENGTH_SHORT).show();
                 Log.d("aaa", "msg: " + error.getMessage());
             }
-        }, getApplicationContext(), "OTBGvPRzsCvGZBB5S9KjPArE", "nXY9LcUaZwGxIeDewkeeYCxNH8QhZNyS");
+        }, getApplicationContext(), "CeCMsaFIzWgUhhrPpz7XChol", "xH6ThHHcsnGVzCQlMh1W4tgYvhkTcA3S");
     }
 
     @Override
