@@ -5,7 +5,7 @@
 
 #### 目前有2个版本
 
-- 1.0版本
+- 1.0 版本
 根据腾讯优图的 api 封装,该库需要与照片选择器同时使用,具体操作请看使用说明
 
 - 2.1 版本
@@ -49,7 +49,7 @@ OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() { 
 ```
 Youtu.getInstance().IdcardOcr(bitmap, 0); // bitmap: 识别的图片 0:身份证正面
 
-OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() { //只是识别正面       
+OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {    
             @Override
             public void onResult(IDCardResult result) {
                 if (result != null) {
