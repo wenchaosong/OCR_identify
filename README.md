@@ -23,7 +23,7 @@ dependencies {
 ```
 - Step 3. 获取 appkey [去百度云创建应用](https://login.bce.baidu.com/?account=)
 ```
-打开百度云,创建应用,得到 AppKey secretKey
+打开百度云,创建应用,得到 AppKey secretKey,根据提示下载 jar 包和 lib 包,并放到项目中
 ```
 - Step 4. 初始化
 ```
