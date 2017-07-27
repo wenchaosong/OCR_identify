@@ -7,6 +7,8 @@
 
 ![image](/pics/idcard2.png )
 
+![image](/pics/idcard3.png )
+
 ## 使用
 
 - Step 1. 把 JitPack repository 添加到build.gradle文件中 repositories的末尾:
