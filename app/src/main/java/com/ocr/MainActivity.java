@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
@@ -21,11 +22,14 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_CAMERA = 102;
+    private TextView mContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mContent = (TextView) findViewById(R.id.content);
 
         // 正面
         findViewById(R.id.id_card_front_button).setOnClickListener(new View.OnClickListener() {
@@ -104,7 +108,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResult(IDCardResult result) {
                 if (result != null) {
-                    Log.d("MainActivity", "result: " + result.toString());
+
+                    mContent.setText("姓名: " + result.getName().toString() + "\n" +
+                            "性别: " + result.getGender().toString() + "\n" +
+                            "民族: " + result.getEthnic().toString() + "族" + "\n" +
+                            "身份证号码: " + result.getIdNumber().toString() + "\n" +
+                            "住址: " + result.getAddress().toString() + "\n");
                 }
             }
 

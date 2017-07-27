@@ -1,15 +1,11 @@
 
 # OCR 身份证识别
 
-根据腾讯优图的 api 封装,能快速识别身份证信息,使用非常方便
+根据百度文字识别 api 封装,能快速识别身份证信息,使用非常方便
 
-#### 目前有2个版本
+![image](/pics/idcard1.png )
 
-- 1.0 版本
-根据腾讯优图的 api 封装,该库需要与照片选择器同时使用,具体操作请看使用说明
-
-- 2.1 版本
-根据百度文字识别 api 封装,具体操作请看使用说明
+![image](/pics/idcard2.png )
 
 ## 使用
 
@@ -22,16 +18,17 @@ repositories {
 - Step 2. 在你的app build.gradle 的 dependencies 中添加依赖
 ```
 dependencies {
-	compile 'com.github.wenchaosong:OCR_identify:1.0.0' // 腾讯优图 任选一个
-	compile 'com.github.wenchaosong:OCR_identify:2.1.0' // 百度 任选一个
+	compile 'com.github.wenchaosong:OCR_identify:2.1.0'
 }
 ```
-- Step 3. 初始化
+- Step 3. 获取 appkey
 ```
-Youtu.initSDK("appid", "secret_id", "secret_key"); // 腾讯优图
-
-OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() { // 百度
-            @Override
+[创建百度云文字识别应用](https://login.bce.baidu.com/?account=),得到 AppKey secretKey
+```
+- Step 4. 初始化
+```
+OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
+            @Override
             public void onResult(AccessToken result) {
 
             }
@@ -39,29 +36,60 @@ OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() { 
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Log.d("msg", "msg: " + error.getMessage());
+                Log.d("onError", "msg: " + error.getMessage());
             }
-        }, getApplicationContext(), "你注册的appkey", "你注册的sk");
-
+        }, getApplicationContext(), "你注册的appkey", "你注册的sk");
 ```
-- Step 4.识别
-
+- Step 5.拍照
 ```
-Youtu.getInstance().IdcardOcr(bitmap, 0); // bitmap: 识别的图片 0:身份证正面
+Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+    FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_ID_CARD_FRONT);
+startActivityForResult(intent, REQUEST_CODE_CAMERA);
+```
+- Step 6.回调
+```
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
 
-OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {    
-            @Override
-            public void onResult(IDCardResult result) {
-                if (result != null) {
-                    Log.d("aaa", "result: " + result.toString());
+    if (requestCode == REQUEST_CODE_CAMERA && resultCode == Activity.RESULT_OK) {
+        if (data != null) {
+            String contentType = data.getStringExtra(CameraActivity.KEY_CONTENT_TYPE);
+            String filePath = FileUtil.getSaveFile(getApplicationContext()).getAbsolutePath();
+            if (!TextUtils.isEmpty(contentType)) {
+                if (CameraActivity.CONTENT_TYPE_ID_CARD_FRONT.equals(contentType)) {
+                    recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, filePath);
+                } else if (CameraActivity.CONTENT_TYPE_ID_CARD_BACK.equals(contentType)) {
+                    recIDCard(IDCardParams.ID_CARD_SIDE_BACK, filePath);
                 }
             }
-
-            @Override
-            public void onError(OCRError error) {
-                Log.d("aaa", "error: " + error.getMessage());
+        }
+    }
+}
+```
+- Step 7.解析
+```
+private void recIDCard(String idCardSide, String filePath) {
+    IDCardParams param = new IDCardParams();
+    param.setImageFile(new File(filePath));
+    param.setIdCardSide(idCardSide);
+    param.setDetectDirection(true);
+    OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {
+        @Override
+        public void onResult(IDCardResult result) {
+            if (result != null) {
+                Log.d("onResult", "result: " + result.toString());
             }
-        });
+        }
+
+        @Override
+        public void onError(OCRError error) {
+            Log.d("onError", "error: " + error.getMessage());
+        }
+    });
+}
 ```
 
-#### 详情见 demo
+### 详情见 demo
