@@ -21,9 +21,9 @@ dependencies {
 	compile 'com.github.wenchaosong:OCR_identify:2.1.0'
 }
 ```
-- Step 3. 获取 appkey
+- Step 3. 获取 appkey [去百度云创建应用](https://login.bce.baidu.com/?account=)
 ```
-[创建百度云文字识别应用](https://login.bce.baidu.com/?account=),得到 AppKey secretKey
+打开百度云,创建应用,得到 AppKey secretKey
 ```
 - Step 4. 初始化
 ```
