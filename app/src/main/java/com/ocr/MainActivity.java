@@ -2,14 +2,11 @@ package com.ocr;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
@@ -30,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 正面
         findViewById(R.id.id_card_front_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,25 +39,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 请选择您的初始化方式
+        // 反面
+        findViewById(R.id.id_card_back_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_ID_CARD_BACK);
+                startActivityForResult(intent, REQUEST_CODE_CAMERA);
+            }
+        });
+
+        // 初始化
         initAccessTokenWithAkSk();
-    }
-
-    private void initAccessToken() {
-
-        OCR.getInstance().initAccessToken(new OnResultListener<AccessToken>() {
-            @Override
-            public void onResult(AccessToken accessToken) {
-
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                error.printStackTrace();
-                Toast.makeText(MainActivity.this, "licence方式获取token失败", Toast.LENGTH_SHORT).show();
-                Log.d("aaa", "msg: " + error.getMessage());
-            }
-        }, getApplicationContext());
     }
 
     private void initAccessTokenWithAkSk() {
@@ -72,20 +65,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Log.d("aaa", "msg: " + error.getMessage());
+                Log.d("MainActivity", "msg: " + error.getMessage());
             }
         }, getApplicationContext(), "CeCMsaFIzWgUhhrPpz7XChol", "xH6ThHHcsnGVzCQlMh1W4tgYvhkTcA3S");
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            initAccessToken();
-        } else {
-            Toast.makeText(getApplicationContext(), "没有开启读取手机内容权限", Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
@@ -107,6 +89,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 解析身份证图片
+     *
+     * @param idCardSide 身份证正反面
+     * @param filePath   图片路径
+     */
     private void recIDCard(String idCardSide, String filePath) {
         IDCardParams param = new IDCardParams();
         param.setImageFile(new File(filePath));
@@ -116,13 +104,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResult(IDCardResult result) {
                 if (result != null) {
-                    Log.d("aaa", "result: " + result.toString());
+                    Log.d("MainActivity", "result: " + result.toString());
                 }
             }
 
             @Override
             public void onError(OCRError error) {
-                Log.d("aaa", "error: " + error.getMessage());
+                Log.d("MainActivity", "error: " + error.getMessage());
             }
         });
     }
@@ -130,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         // 释放内存资源
         OCR.getInstance().release();
     }

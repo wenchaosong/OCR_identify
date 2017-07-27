@@ -19,4 +19,12 @@
         android:text="身份证正面"
         tools:ignore="HardcodedText"/>
 
+    <Button
+        android:id="@+id/id_card_back_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="身份证反面"
+        tools:ignore="HardcodedText"/>
+
+
 </LinearLayout>
