@@ -8,11 +8,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
+import com.baidu.ocr.sdk.model.BankCardParams;
+import com.baidu.ocr.sdk.model.BankCardResult;
 import com.baidu.ocr.sdk.model.IDCardParams;
 import com.baidu.ocr.sdk.model.IDCardResult;
 import com.baidu.ocr.ui.camera.CameraActivity;
@@ -55,6 +58,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 银行卡
+        findViewById(R.id.credit_card_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_BANK_CARD);
+                startActivityForResult(intent, REQUEST_CODE_CAMERA);
+            }
+        });
+
         // 初始化
         initAccessTokenWithAkSk();
     }
@@ -87,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
                         recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, filePath);
                     } else if (CameraActivity.CONTENT_TYPE_ID_CARD_BACK.equals(contentType)) {
                         recIDCard(IDCardParams.ID_CARD_SIDE_BACK, filePath);
+                    } else if (CameraActivity.CONTENT_TYPE_BANK_CARD.equals(contentType)) {
+                        recCreditCard(filePath);
                     }
                 }
             }
@@ -109,16 +126,75 @@ public class MainActivity extends AppCompatActivity {
             public void onResult(IDCardResult result) {
                 if (result != null) {
 
-                    mContent.setText("姓名: " + result.getName().toString() + "\n" +
-                            "性别: " + result.getGender().toString() + "\n" +
-                            "民族: " + result.getEthnic().toString() + "族" + "\n" +
-                            "身份证号码: " + result.getIdNumber().toString() + "\n" +
-                            "住址: " + result.getAddress().toString() + "\n");
+                    String name = "";
+                    String sex = "";
+                    String nation = "";
+                    String num = "";
+                    String address = "";
+                    if (result.getName() != null) {
+                        name = result.getName().toString();
+                    }
+                    if (result.getGender() != null) {
+                        sex = result.getGender().toString();
+                    }
+                    if (result.getEthnic() != null) {
+                        nation = result.getEthnic().toString();
+                    }
+                    if (result.getIdNumber() != null) {
+                        num = result.getIdNumber().toString();
+                    }
+                    if (result.getAddress() != null) {
+                        address = result.getAddress().toString();
+                    }
+                    mContent.setText("姓名: " + name + "\n" +
+                            "性别: " + sex + "\n" +
+                            "民族: " + nation + "\n" +
+                            "身份证号码: " + num + "\n" +
+                            "住址: " + address + "\n");
                 }
             }
 
             @Override
             public void onError(OCRError error) {
+                Toast.makeText(MainActivity.this, "识别出错,请查看log错误代码", Toast.LENGTH_SHORT).show();
+                Log.d("MainActivity", "error: " + error.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 解析银行卡
+     *
+     * @param filePath 图片路径
+     */
+    private void recCreditCard(String filePath) {
+        // 银行卡识别参数设置
+        BankCardParams param = new BankCardParams();
+        param.setImageFile(new File(filePath));
+
+        // 调用银行卡识别服务
+        OCR.getInstance().recognizeBankCard(param, new OnResultListener<BankCardResult>() {
+            @Override
+            public void onResult(BankCardResult result) {
+                if (result != null) {
+
+                    String type;
+                    if (result.getBankCardType() == BankCardResult.BankCardType.Credit) {
+                        type = "信用卡";
+                    } else if (result.getBankCardType() == BankCardResult.BankCardType.Debit) {
+                        type = "借记卡";
+                    } else {
+                        type = "不能识别";
+                    }
+                    mContent.setText("银行卡号: " + (!TextUtils.isEmpty(result.getBankCardNumber()) ? result.getBankCardNumber() : "") + "\n" +
+                            "银行名称: " + (!TextUtils.isEmpty(result.getBankName()) ? result.getBankName() : "") + "\n" +
+                            "银行类型: " + type + "\n");
+                }
+            }
+
+            @Override
+            public void onError(OCRError error) {
+                Toast.makeText(MainActivity.this, "识别出错,请查看log错误代码", Toast.LENGTH_SHORT).show();
                 Log.d("MainActivity", "error: " + error.getMessage());
             }
         });
