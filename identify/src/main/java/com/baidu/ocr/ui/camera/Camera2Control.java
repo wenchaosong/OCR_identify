@@ -4,16 +4,6 @@
 
 package com.baidu.ocr.ui.camera;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -49,16 +39,26 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class Camera2Control implements ICameraControl {
     @Override
     public void setDetectCallback(OnDetectPictureCallback callback) {
-        // TODO 暂时只用camera
+
     }
 
     @Override
     public AtomicBoolean getAbortingScan() {
-        // TODO 暂时只用camera
+
         return null;
     }
 
@@ -301,7 +301,7 @@ public class Camera2Control implements ICameraControl {
                         @Override
                         public void onConfigureFailed(
                                 @NonNull CameraCaptureSession cameraCaptureSession) {
-                            // TODO
+
                         }
                     }, null
             );

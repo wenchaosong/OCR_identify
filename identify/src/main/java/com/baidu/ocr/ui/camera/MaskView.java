@@ -66,6 +66,17 @@ public class MaskView extends View {
 
     }
 
+    public Rect getFrameRectExtend() {
+        Rect rc = new Rect(frame);
+        int widthExtend = (int) ((frame.right - frame.left) * 0.02f);
+        int heightExtend = (int) ((frame.bottom - frame.top) * 0.02f);
+        rc.left -= widthExtend;
+        rc.right += widthExtend;
+        rc.top -= heightExtend;
+        rc.bottom += heightExtend;
+        return rc;
+    }
+
     public void setMaskType(@MaskType int maskType) {
         this.maskType = maskType;
         switch (maskType) {

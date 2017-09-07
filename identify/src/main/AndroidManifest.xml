@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.baidu.ocr.ui">
+<!--
+  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+  -->
+<manifest package="com.baidu.ocr.ui">
 
 </manifest>

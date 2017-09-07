@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.baidu.idcardquality.IDcardQualityProcess;
 import com.baidu.ocr.ui.R;
 import com.baidu.ocr.ui.crop.CropView;
 import com.baidu.ocr.ui.crop.FrameOverlayView;
@@ -36,6 +37,8 @@ public class CameraActivity extends Activity {
 
     public static final String KEY_OUTPUT_FILE_PATH = "outputFilePath";
     public static final String KEY_CONTENT_TYPE = "contentType";
+    public static final String KEY_NATIVE_TOKEN = "nativeToken";
+    public static final String KEY_NATIVE_ENABLE = "nativeEnable";
 
     public static final String CONTENT_TYPE_GENERAL = "general";
     public static final String CONTENT_TYPE_ID_CARD_FRONT = "IDCardFront";
@@ -72,6 +75,7 @@ public class CameraActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bd_ocr_activity_camera);
 
@@ -120,6 +124,12 @@ public class CameraActivity extends Activity {
 
     private void initParams() {
         String outputPath = getIntent().getStringExtra(KEY_OUTPUT_FILE_PATH);
+        final String token = getIntent().getStringExtra(KEY_NATIVE_TOKEN);
+        boolean isNativeEnable = getIntent().getBooleanExtra(KEY_NATIVE_ENABLE, true);
+        if (token == null) {
+            isNativeEnable = false;
+        }
+
         if (outputPath != null) {
             outputFile = new File(outputPath);
         }
@@ -133,12 +143,16 @@ public class CameraActivity extends Activity {
             case CONTENT_TYPE_ID_CARD_FRONT:
                 maskType = MaskView.MASK_TYPE_ID_CARD_FRONT;
                 overlayView.setVisibility(View.INVISIBLE);
-                takePhotoBtn.setVisibility(View.INVISIBLE);
+                if (isNativeEnable) {
+                    takePhotoBtn.setVisibility(View.INVISIBLE);
+                }
                 break;
             case CONTENT_TYPE_ID_CARD_BACK:
                 maskType = MaskView.MASK_TYPE_ID_CARD_BACK;
                 overlayView.setVisibility(View.INVISIBLE);
-                takePhotoBtn.setVisibility(View.INVISIBLE);
+                if (isNativeEnable) {
+                    takePhotoBtn.setVisibility(View.INVISIBLE);
+                }
                 break;
             case CONTENT_TYPE_BANK_CARD:
                 maskType = MaskView.MASK_TYPE_BANK_CARD;
@@ -150,8 +164,43 @@ public class CameraActivity extends Activity {
                 cropMaskView.setVisibility(View.INVISIBLE);
                 break;
         }
+
+        // 身份证本地能力初始化
+        if (maskType == MaskView.MASK_TYPE_ID_CARD_FRONT || maskType == MaskView.MASK_TYPE_ID_CARD_BACK) {
+            if (isNativeEnable) {
+                initNative(token);
+            }
+        }
+        cameraView.setEnableScan(isNativeEnable);
         cameraView.setMaskType(maskType, this);
         cropMaskView.setMaskType(maskType);
+    }
+
+    private void initNative(final String token) {
+        CameraThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                // 加载本地so失败, 异常返回getloadSoException
+                if (IDcardQualityProcess.getLoadSoException() != null) {
+                    cameraView.setInitNativeStatus(CameraView.NATIVE_SOLOAD_FAIL);
+                    return;
+                }
+                // 授权状态
+                int authStatus = IDcardQualityProcess.init(token);
+                // 加载模型状态
+                int initModelStatus = IDcardQualityProcess.getInstance()
+                        .idcardQualityInit(CameraActivity.this.getAssets(),
+                                "models");
+                if (authStatus != 0) {
+                    cameraView.setInitNativeStatus(CameraView.NATIVE_AUTH_FAIL);
+                    return;
+                }
+                if (initModelStatus != 0) {
+                    cameraView.setInitNativeStatus(CameraView.NATIVE_INIT_FAIL);
+                    return;
+                }
+            }
+        });
     }
 
     private void showTakePicture() {
@@ -201,7 +250,6 @@ public class CameraActivity extends Activity {
                     return;
                 }
             }
-
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
@@ -230,13 +278,13 @@ public class CameraActivity extends Activity {
     private CameraView.OnTakePictureCallback autoTakePictureCallback = new CameraView.OnTakePictureCallback() {
         @Override
         public void onPictureTaken(final Bitmap bitmap) {
-            new Thread() {
+            CameraThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    super.run();
                     try {
                         FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                        bitmap.recycle();
                         fileOutputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -247,7 +295,7 @@ public class CameraActivity extends Activity {
                     setResult(Activity.RESULT_OK, intent);
                     finish();
                 }
-            }.start();
+            });
         }
     };
 
@@ -323,10 +371,9 @@ public class CameraActivity extends Activity {
     };
 
     private void doConfirmResult() {
-        new Thread() {
+        CameraThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                super.run();
                 try {
                     FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
                     Bitmap bitmap = ((BitmapDrawable) displayImageView.getDrawable()).getBitmap();
@@ -341,7 +388,7 @@ public class CameraActivity extends Activity {
                 setResult(Activity.RESULT_OK, intent);
                 finish();
             }
-        }.start();
+        });
     }
 
     private View.OnClickListener confirmButtonOnClickListener = new View.OnClickListener() {
@@ -417,10 +464,14 @@ public class CameraActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-            cropView.setFilePath(getRealPathFromURI(uri));
-            showCrop();
+        if (requestCode == REQUEST_CODE_PICK_IMAGE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri uri = data.getData();
+                cropView.setFilePath(getRealPathFromURI(uri));
+                showCrop();
+            } else {
+                cameraView.getCameraControl().resume();
+            }
         }
     }
 
@@ -442,5 +493,12 @@ public class CameraActivity extends Activity {
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+//        cameraView.release();
     }
 }

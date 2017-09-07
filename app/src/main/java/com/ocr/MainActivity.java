@@ -78,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
         OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
-
+                Log.d("MainActivity", "onResult: " + result.toString());
             }
 
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Log.d("MainActivity", "msg: " + error.getMessage());
+                Log.d("MainActivity", "onError: " + error.getMessage());
             }
         }, getApplicationContext(), "CeCMsaFIzWgUhhrPpz7XChol", "xH6ThHHcsnGVzCQlMh1W4tgYvhkTcA3S");
     }
@@ -119,8 +119,12 @@ public class MainActivity extends AppCompatActivity {
     private void recIDCard(String idCardSide, String filePath) {
         IDCardParams param = new IDCardParams();
         param.setImageFile(new File(filePath));
+        // 设置身份证正反面
         param.setIdCardSide(idCardSide);
+        // 设置方向检测
         param.setDetectDirection(true);
+        // 设置图像参数压缩质量0-100, 越大图像质量越好但是请求时间越长。 不设置则默认值为20
+        param.setImageQuality(40);
         OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {
             @Override
             public void onResult(IDCardResult result) {
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(OCRError error) {
                 Toast.makeText(MainActivity.this, "识别出错,请查看log错误代码", Toast.LENGTH_SHORT).show();
-                Log.d("MainActivity", "error: " + error.getMessage());
+                Log.d("MainActivity", "onError: " + error.getMessage());
             }
         });
     }
@@ -195,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(OCRError error) {
                 Toast.makeText(MainActivity.this, "识别出错,请查看log错误代码", Toast.LENGTH_SHORT).show();
-                Log.d("MainActivity", "error: " + error.getMessage());
+                Log.d("MainActivity", "onError: " + error.getMessage());
             }
         });
     }

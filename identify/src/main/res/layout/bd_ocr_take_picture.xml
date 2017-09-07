@@ -23,6 +23,7 @@
         android:layout_marginTop="14dp"
         android:src="@drawable/bd_ocr_close"/>
 
+
     <ImageView
         android:id="@+id/album_button"
         android:layout_width="60dp"
@@ -33,12 +34,14 @@
         android:padding="18dp"
         android:src="@drawable/bd_ocr_gallery"/>
 
+
     <ImageView
         android:id="@+id/take_photo_button"
         android:layout_width="58dp"
         android:layout_height="58dp"
         android:background="@drawable/bd_ocr_take_photo_selector"
         android:clickable="true"/>
+
 
     <ImageView
         android:id="@+id/light_button"
@@ -51,7 +54,6 @@
         android:padding="15dp"
         android:paddingBottom="3dp"
         android:src="@drawable/bd_ocr_light_off"
-        android:visibility="gone"
         />
 
 </com.baidu.ocr.ui.camera.OCRCameraLayout>

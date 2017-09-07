@@ -3,15 +3,6 @@
  */
 package com.baidu.ocr.ui.camera;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import com.baidu.idcardquality.IDcardQualityProcess;
-import com.baidu.ocr.ui.R;
-import com.baidu.ocr.ui.util.DimensionUtil;
-import com.baidu.ocr.ui.util.ImageUtil;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,19 +11,25 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.baidu.idcardquality.IDcardQualityProcess;
+import com.baidu.ocr.ui.R;
+import com.baidu.ocr.ui.util.DimensionUtil;
+import com.baidu.ocr.ui.util.ImageUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * 负责，相机的管理。同时提供，裁剪遮罩功能。
@@ -61,7 +58,40 @@ public class CameraView extends FrameLayout {
      */
     public static final int ORIENTATION_INVERT = 270;
 
+    /**
+     * 本地模型授权，加载成功
+     */
+    public static final int NATIVE_AUTH_INIT_SUCCESS = 0;
+
+    /**
+     * 本地模型授权，加载成功
+     */
+    public static final int NATIVE_SOLOAD_FAIL = 10;
+
+    /**
+     * 本地模型授权，加载成功
+     */
+    public static final int NATIVE_AUTH_FAIL = 11;
+
+    /**
+     * 本地模型授权，加载成功
+     */
+    public static final int NATIVE_INIT_FAIL = 12;
+
+
+    /**
+     * 是否已经通过本地质量控制扫描
+     */
     private final int SCAN_SUCCESS = 0;
+
+    public void setInitNativeStatus(int initNativeStatus) {
+        this.initNativeStatus = initNativeStatus;
+    }
+
+    /**
+     * 本地检测初始化，模型加载标识
+     */
+    private int initNativeStatus = NATIVE_AUTH_INIT_SUCCESS;
 
     @IntDef({ORIENTATION_PORTRAIT, ORIENTATION_HORIZONTAL, ORIENTATION_INVERT})
     public @interface Orientation {
@@ -91,8 +121,23 @@ public class CameraView extends FrameLayout {
      */
     private TextView hintViewText;
 
+    /**
+     * 提示文案容器
+     */
     private LinearLayout hintViewTextWrapper;
 
+    /**
+     * 是否是本地质量控制扫描
+     */
+    private boolean isEnableScan;
+
+    public void setEnableScan(boolean enableScan) {
+        isEnableScan = enableScan;
+    }
+
+    /**
+     * UI线程的handler
+     */
     Handler uiHandler = new Handler(Looper.getMainLooper());
 
     public ICameraControl getCameraControl() {
@@ -102,6 +147,7 @@ public class CameraView extends FrameLayout {
     public void setOrientation(@Orientation int orientation) {
         cameraControl.setDisplayOrientation(orientation);
     }
+
     public CameraView(Context context) {
         super(context);
         init();
@@ -172,17 +218,7 @@ public class CameraView extends FrameLayout {
             hintViewTextWrapper.setVisibility(INVISIBLE);
         }
 
-        if (maskType == MaskView.MASK_TYPE_ID_CARD_FRONT || maskType == MaskView.MASK_TYPE_ID_CARD_BACK) {
-            CameraThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    IDcardQualityProcess.init("69bae515d33d933bb666b09f65944e56");
-                    IDcardQualityProcess.getInstance().idcard_quality_init(ctx.getAssets(), "models");
-                }
-            });
-        }
-
-        if (maskType == MaskView.MASK_TYPE_ID_CARD_FRONT) {
+        if (maskType == MaskView.MASK_TYPE_ID_CARD_FRONT && isEnableScan) {
             cameraControl.setDetectCallback(new ICameraControl.OnDetectPictureCallback() {
                 @Override
                 public int onDetect(byte[] data, int rotation) {
@@ -191,7 +227,7 @@ public class CameraView extends FrameLayout {
             });
         }
 
-        if (maskType == MaskView.MASK_TYPE_ID_CARD_BACK) {
+        if (maskType == MaskView.MASK_TYPE_ID_CARD_BACK && isEnableScan) {
             cameraControl.setDetectCallback(new ICameraControl.OnDetectPictureCallback() {
                 @Override
                 public int onDetect(byte[] data, int rotation) {
@@ -202,6 +238,10 @@ public class CameraView extends FrameLayout {
     }
 
     private int detect(byte[] data, final int rotation) {
+        if (initNativeStatus != NATIVE_AUTH_INIT_SUCCESS) {
+            showTipMessage(initNativeStatus);
+            return 1;
+        }
         // 扫描成功阻止多余的操作
         if (cameraControl.getAbortingScan().get()) {
             return 0;
@@ -219,7 +259,7 @@ public class CameraView extends FrameLayout {
         int width = rotation % 180 == 0 ? decoder.getWidth() : decoder.getHeight();
         int height = rotation % 180 == 0 ? decoder.getHeight() : decoder.getWidth();
 
-        Rect frameRect = maskView.getFrameRect();
+        Rect frameRect = maskView.getFrameRectExtend();
 
         int left = width * frameRect.left / maskView.getWidth();
         int top = height * frameRect.top / maskView.getHeight();
@@ -277,7 +317,6 @@ public class CameraView extends FrameLayout {
         }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        //            options.inPreferredConfig = Bitmap.Config.RGB_565;
 
         // 最大图片大小。
         int maxPreviewImageSize = 2560;
@@ -288,6 +327,7 @@ public class CameraView extends FrameLayout {
         options.inScaled = true;
         options.inDensity = Math.max(options.outWidth, options.outHeight);
         options.inTargetDensity = size;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
 
         Bitmap bitmap = decoder.decodeRegion(region, options);
 
@@ -306,25 +346,35 @@ public class CameraView extends FrameLayout {
 
         final int status;
 
+        // 调用本地质量控制请求
         switch (maskType) {
             case MaskView.MASK_TYPE_ID_CARD_FRONT:
-                status = IDcardQualityProcess.getInstance().idcard_quality_detection_img(bitmap, true);
+                status = IDcardQualityProcess.getInstance().idcardQualityDetectionImg(bitmap, true);
                 break;
             case MaskView.MASK_TYPE_ID_CARD_BACK:
-                status = IDcardQualityProcess.getInstance().idcard_quality_detection_img(bitmap, false);
+                status = IDcardQualityProcess.getInstance().idcardQualityDetectionImg(bitmap, false);
                 break;
             default:
                 status = 1;
         }
 
+        // 当有某个扫描处理线程调用成功后，阻止其他线程继续调用本地控制代码
         if (status == SCAN_SUCCESS) {
             // 扫描成功阻止多线程同时回调
             if (!cameraControl.getAbortingScan().compareAndSet(false, true)) {
+                bitmap.recycle();
                 return 0;
             }
             autoPictureCallback.onPictureTaken(bitmap);
         }
 
+        showTipMessage(status);
+
+        return status;
+    }
+
+    private void showTipMessage(final int status) {
+        // 提示tip文字变化
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -336,7 +386,6 @@ public class CameraView extends FrameLayout {
                 }
             }
         });
-        return status;
     }
 
     private String getScanMessage(int status) {
@@ -359,6 +408,18 @@ public class CameraView extends FrameLayout {
                 break;
             case 6:
                 message = "请将镜头靠近身份证";
+                break;
+            case 7:
+                message = "请确保身份证完整";
+                break;
+            case NATIVE_AUTH_FAIL:
+                message = "本地质量控制授权失败";
+                break;
+            case NATIVE_INIT_FAIL:
+                message = "本地模型加载失败";
+                break;
+            case NATIVE_SOLOAD_FAIL:
+                message = "本地SO库加载失败";
                 break;
             case 1:
             default:
@@ -431,16 +492,15 @@ public class CameraView extends FrameLayout {
      * 所以需要做旋转处理。
      *
      * @param outputFile 写入照片的文件。
-     * @param imageFile  原始照片。
+     * @param data       原始照片数据。
      * @param rotation   照片exif中的旋转角度。
-     *
      * @return 裁剪好的bitmap。
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private Bitmap crop(File outputFile, File imageFile, int rotation) {
+    private Bitmap crop(File outputFile, byte[] data, int rotation) {
         try {
             // BitmapRegionDecoder不会将整个图片加载到内存。
-            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(imageFile.getAbsolutePath(), true);
+            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(data, 0, data.length, true);
 
             Rect previewFrame = cameraControl.getPreviewFrame();
 
@@ -505,7 +565,6 @@ public class CameraView extends FrameLayout {
             }
 
             BitmapFactory.Options options = new BitmapFactory.Options();
-            //            options.inPreferredConfig = Bitmap.Config.RGB_565;
 
             // 最大图片大小。
             int maxPreviewImageSize = 2560;
@@ -516,7 +575,7 @@ public class CameraView extends FrameLayout {
             options.inScaled = true;
             options.inDensity = Math.max(options.outWidth, options.outHeight);
             options.inTargetDensity = size;
-
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap bitmap = decoder.decodeRegion(region, options);
 
             if (rotation != 0) {
@@ -550,53 +609,23 @@ public class CameraView extends FrameLayout {
         return null;
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (cameraViewTakePictureCallback.thread != null) {
-            cameraViewTakePictureCallback.thread.quit();
-        }
-    }
+//    public void release() {
+//        IDcardQualityProcess.getInstance().releaseModel();
+//    }
 
     private class CameraViewTakePictureCallback implements ICameraControl.OnTakePictureCallback {
 
         private File file;
         private OnTakePictureCallback callback;
 
-        HandlerThread thread = new HandlerThread("cropThread");
-        Handler handler;
-
-        {
-            thread.start();
-            handler = new Handler(thread.getLooper());
-        }
-
         @Override
         public void onPictureTaken(final byte[] data) {
-            handler.post(new Runnable() {
+            CameraThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        final int rotation = ImageUtil.getOrientation(data);
-                        final File tempFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), "jpg");
-                        FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
-                        fileOutputStream.write(data);
-                        fileOutputStream.flush();
-                        fileOutputStream.close();
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Bitmap bitmap = crop(file, tempFile, rotation);
-                                callback.onPictureTaken(bitmap);
-                                boolean deleted = tempFile.delete();
-                                if (!deleted) {
-                                    tempFile.deleteOnExit();
-                                }
-                            }
-                        });
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    final int rotation = ImageUtil.getOrientation(data);
+                    Bitmap bitmap = crop(file, data, rotation);
+                    callback.onPictureTaken(bitmap);
                 }
             });
         }
