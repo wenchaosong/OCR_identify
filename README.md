@@ -101,6 +101,7 @@ private void recIDCard(String idCardSide, String filePath) {
 - 混淆
 
 -keep class com.baidu.ocr.sdk.**{*;}
+
 -dontwarn com.baidu.ocr.**
 
 ### 详情见 demo
