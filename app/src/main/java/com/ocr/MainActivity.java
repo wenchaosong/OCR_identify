@@ -18,6 +18,8 @@ import com.baidu.ocr.sdk.model.BankCardParams;
 import com.baidu.ocr.sdk.model.BankCardResult;
 import com.baidu.ocr.sdk.model.IDCardParams;
 import com.baidu.ocr.sdk.model.IDCardResult;
+import com.baidu.ocr.sdk.model.OcrRequestParams;
+import com.baidu.ocr.sdk.model.OcrResponseResult;
 import com.baidu.ocr.ui.camera.CameraActivity;
 
 import java.io.File;
@@ -25,6 +27,8 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_CAMERA = 102;
+    private static final int REQUEST_CODE_DRIVING_LICENSE = 103;
+    private static final int REQUEST_CODE_VEHICLE_LICENSE = 104;
     private TextView mContent;
 
     @Override
@@ -70,23 +74,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 驾驶证
+        findViewById(R.id.driving_card_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE,
+                        CameraActivity.CONTENT_TYPE_GENERAL);
+                startActivityForResult(intent, REQUEST_CODE_DRIVING_LICENSE);
+            }
+        });
+
+        // 行驶证
+        findViewById(R.id.vehicle_card_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE,
+                        CameraActivity.CONTENT_TYPE_GENERAL);
+                startActivityForResult(intent, REQUEST_CODE_VEHICLE_LICENSE);
+            }
+        });
+
         // 初始化
         initAccessTokenWithAkSk();
     }
 
     private void initAccessTokenWithAkSk() {
         OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
-            @Override
-            public void onResult(AccessToken result) {
-                Log.d("MainActivity", "onResult: " + result.toString());
-            }
+              @Override
+              public void onResult(AccessToken result) {
+                  Log.d("MainActivity", "onResult: " + result.toString());
+                  runOnUiThread(new Runnable() {
+                      @Override
+                      public void run() {
+                          Toast.makeText(MainActivity.this, "初始化认证成功", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+              }
 
-            @Override
-            public void onError(OCRError error) {
-                error.printStackTrace();
-                Log.d("MainActivity", "onError: " + error.getMessage());
-            }
-        }, getApplicationContext(), "CeCMsaFIzWgUhhrPpz7XChol", "xH6ThHHcsnGVzCQlMh1W4tgYvhkTcA3S");
+              @Override
+              public void onError(OCRError error) {
+                  error.printStackTrace();
+                  Log.e("MainActivity", "onError: " + error.getMessage());
+                  runOnUiThread(new Runnable() {
+                      @Override
+                      public void run() {
+                          Toast.makeText(MainActivity.this, "初始化认证失败,请检查 key", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+              }
+          }, getApplicationContext(),
+                // 需要自己配置 https://console.bce.baidu.com
+                "oH6tqEsBX2PSW2OViQyd2yYA",
+                // 需要自己配置 https://console.bce.baidu.com
+                "A36f7UrseglvtH9jGP5u7bU9uGxIjZ31");
     }
 
     @Override
@@ -107,6 +153,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+        }
+        if (requestCode == REQUEST_CODE_DRIVING_LICENSE && resultCode == Activity.RESULT_OK) {
+            String filePath = FileUtil.getSaveFile(getApplicationContext()).getAbsolutePath();
+            recDrivingCard(filePath);
+        }
+        if (requestCode == REQUEST_CODE_VEHICLE_LICENSE && resultCode == Activity.RESULT_OK) {
+            String filePath = FileUtil.getSaveFile(getApplicationContext()).getAbsolutePath();
+            recVehicleCard(filePath);
         }
     }
 
@@ -200,6 +254,58 @@ public class MainActivity extends AppCompatActivity {
             public void onError(OCRError error) {
                 Toast.makeText(MainActivity.this, "识别出错,请查看log错误代码", Toast.LENGTH_SHORT).show();
                 Log.d("MainActivity", "onError: " + error.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 解析驾驶证
+     *
+     * @param filePath 图片路径
+     */
+    private void recDrivingCard(String filePath) {
+        // 驾驶证识别参数设置
+        OcrRequestParams param = new OcrRequestParams();
+
+        // 设置image参数
+        param.setImageFile(new File(filePath));
+        // 设置其他参数
+        param.putParam("detect_direction", true);
+        // 调用驾驶证识别服务
+        OCR.getInstance().recognizeDrivingLicense(param, new OnResultListener<OcrResponseResult>() {
+            @Override
+            public void onResult(OcrResponseResult result) {
+                // 调用成功，返回OcrResponseResult对象
+                Log.d("MainActivity", result.getJsonRes());
+                mContent.setText(result.getJsonRes());
+            }
+
+            @Override
+            public void onError(OCRError error) {
+                // 调用失败，返回OCRError对象
+            }
+        });
+    }
+
+    /**
+     * 解析行驶证
+     *
+     * @param filePath 图片路径
+     */
+    private void recVehicleCard(String filePath) {
+        OcrRequestParams param = new OcrRequestParams();
+        param.setImageFile(new File(filePath));
+        OCR.getInstance().recognizeVehicleLicense(param, new OnResultListener<OcrResponseResult>() {
+            @Override
+            public void onResult(OcrResponseResult result) {
+                Log.d("MainActivity", result.getJsonRes());
+                mContent.setText(result.getJsonRes());
+            }
+
+            @Override
+            public void onError(OCRError error) {
+                // 调用失败，返回OCRError对象
+
             }
         });
     }
