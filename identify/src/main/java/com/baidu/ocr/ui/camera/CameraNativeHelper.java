@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2018 Baidu, Inc. All Rights Reserved.
- */
 package com.baidu.ocr.ui.camera;
 
 import android.content.Context;

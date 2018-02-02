@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
- */
 package com.baidu.idcardquality;
 
 import android.content.res.AssetManager;
@@ -14,6 +11,7 @@ import com.baidu.idl.util.UIThread;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class IDcardQualityProcess {
+
     final ReentrantReadWriteLock nativeModelLock = new ReentrantReadWriteLock();
     private static IDcardQualityProcess mInstance;
     private static String tokenString;
@@ -22,6 +20,7 @@ public class IDcardQualityProcess {
     private static volatile boolean hasReleased;
 
     public IDcardQualityProcess() {
+
     }
 
     public static synchronized IDcardQualityProcess getInstance() {
