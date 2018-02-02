@@ -55,6 +55,7 @@ public final class DecodeFormatManager {
     }
 
     private DecodeFormatManager() {
+
     }
 
     public static Set<BarcodeFormat> parseDecodeFormats(Intent intent) {

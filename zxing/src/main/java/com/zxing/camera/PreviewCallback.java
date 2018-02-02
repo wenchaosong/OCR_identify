@@ -4,11 +4,8 @@ import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 final class PreviewCallback implements Camera.PreviewCallback {
-
-    private static final String TAG = PreviewCallback.class.getSimpleName();
 
     private final CameraConfigurationManager configManager;
     private Handler previewHandler;
@@ -32,8 +29,6 @@ final class PreviewCallback implements Camera.PreviewCallback {
                     cameraResolution.y, data);
             message.sendToTarget();
             previewHandler = null;
-        } else {
-            Log.d(TAG, "Got preview callback, but no handler or resolution available");
         }
     }
 

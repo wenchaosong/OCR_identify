@@ -21,7 +21,6 @@ public class CodeCreator {
     /*生成二维码*/
     public static Bitmap createQRCode(String content, int w, int h, Bitmap logo) throws WriterException {
 
-
         if (TextUtils.isEmpty(content)) {
             return null;
         }
@@ -36,7 +35,6 @@ public class CodeCreator {
             matrix.postScale(scaleFactor, scaleFactor);
             logoBitmap = Bitmap.createBitmap(logo, 0, 0, logo.getWidth(), logo.getHeight(), matrix, true);
         }
-
 
         /*如果log不为null,重新计算偏移量*/
         int logoW = 0;

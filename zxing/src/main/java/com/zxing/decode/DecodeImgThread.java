@@ -3,7 +3,6 @@ package com.zxing.decode;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
@@ -16,22 +15,17 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 /**
- * Created by yzq on 2017/10/17.
- * <p>
  * 解析二维码图片
  * 解析是耗时操作，要放在子线程
  */
 public class DecodeImgThread extends Thread {
-
 
     /*图片路径*/
     private String imgPath;
     /*回调*/
     private DecodeImgCallback callback;
 
-
     public DecodeImgThread(String imgPath, DecodeImgCallback callback) {
-
         this.imgPath = imgPath;
         this.callback = callback;
     }
@@ -77,13 +71,11 @@ public class DecodeImgThread extends Thread {
         // 开始对图像资源解码
         Result rawResult = null;
         try {
-            rawResult = multiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource(scanBitmap))));
-
-            Log.i("解析结果", rawResult.getText());
+            rawResult = multiFormatReader.decodeWithState(
+                    new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource(scanBitmap))));
 
         } catch (Exception e) {
             e.printStackTrace();
-            //  Log.i("解析的图片结果","失败");
         }
 
         if (rawResult != null) {
@@ -92,8 +84,6 @@ public class DecodeImgThread extends Thread {
             callback.onImageDecodeFailed();
         }
 
-
     }
-
 
 }

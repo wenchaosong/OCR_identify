@@ -1,7 +1,6 @@
 package com.zxing.android;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
@@ -9,8 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.AppCompatImageView;
-import android.support.v7.widget.LinearLayoutCompat;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -22,7 +19,7 @@ import android.widget.Toast;
 
 import com.google.zxing.Result;
 import com.zxing.R;
-import com.zxing.bean.ZxingConfig;
+import com.zxing.ZxingConfig;
 import com.zxing.camera.CameraManager;
 import com.zxing.common.Constant;
 import com.zxing.decode.DecodeImgCallback;
@@ -33,9 +30,7 @@ import com.zxing.view.ViewfinderView;
 import java.io.IOException;
 
 /**
- * @author: yzq
- * @date: 2017/10/26 15:22
- * @declare :扫一扫
+ * 扫一扫界面
  */
 public class CaptureActivity extends Activity implements SurfaceHolder.Callback, View.OnClickListener {
 
@@ -50,7 +45,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
     private LinearLayout bottomLayout;
     private boolean hasSurface;
     private InactivityTimer inactivityTimer;
-    private BeepManager beepManager;
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
     private SurfaceHolder surfaceHolder;
@@ -79,13 +73,11 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        Log.i("onCreate", "setContentView");
         /*先获取配置信息*/
         try {
             config = (ZxingConfig) getIntent().getExtras().get(Constant.INTENT_ZXING_CONFIG);
         } catch (Exception e) {
-
-            Log.i("config", e.toString());
+            e.printStackTrace();
         }
 
         if (config == null) {
@@ -101,9 +93,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
         hasSurface = false;
 
         inactivityTimer = new InactivityTimer(this);
-        beepManager = new BeepManager(this);
-        beepManager.setPlayBeep(config.isPlayBeep());
-        beepManager.setVibrate(config.isShake());
 
     }
 
@@ -175,13 +164,10 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
 
         inactivityTimer.onActivity();
 
-        beepManager.playBeepSoundAndVibrate();
-
         Intent intent = getIntent();
         intent.putExtra(Constant.CODED_CONTENT, rawResult.getText());
         setResult(RESULT_OK, intent);
         this.finish();
-
 
     }
 
@@ -211,7 +197,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
             surfaceHolder.addCallback(this);
         }
 
-        beepManager.updatePrefs();
         inactivityTimer.onResume();
 
     }
@@ -231,21 +216,10 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
                 handler = new CaptureActivityHandler(this, cameraManager);
             }
         } catch (IOException ioe) {
-            Log.w(TAG, ioe);
-            displayFrameworkBugMessageAndExit();
+            ioe.printStackTrace();
         } catch (RuntimeException e) {
-            Log.w(TAG, "Unexpected error initializing camera", e);
-            displayFrameworkBugMessageAndExit();
+            e.printStackTrace();
         }
-    }
-
-    private void displayFrameworkBugMessageAndExit() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("扫一扫");
-        builder.setMessage(getString(R.string.msg_camera_framework_bug));
-        builder.setPositiveButton(R.string.button_ok, new FinishListener(this));
-        builder.setOnCancelListener(new FinishListener(this));
-        builder.show();
     }
 
     @Override
@@ -255,7 +229,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
             handler = null;
         }
         inactivityTimer.onPause();
-        beepManager.close();
         cameraManager.closeDriver();
 
         if (!hasSurface) {
@@ -285,8 +258,7 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
     }
 
@@ -325,7 +297,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback,
                     Toast.makeText(CaptureActivity.this, "抱歉，解析失败,换个图片试试.", Toast.LENGTH_SHORT).show();
                 }
             }).run();
-
 
         }
     }

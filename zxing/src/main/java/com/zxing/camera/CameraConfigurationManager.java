@@ -3,15 +3,12 @@ package com.zxing.camera;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.Camera;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
 import java.util.regex.Pattern;
 
 final class CameraConfigurationManager {
-
-    private static final String TAG = CameraConfigurationManager.class.getSimpleName();
 
     private static final int TEN_DESIRED_ZOOM = 5;
     private static final int DESIRED_SHARPNESS = 30;
@@ -21,7 +18,6 @@ final class CameraConfigurationManager {
     private final Context context;
     private Point screenResolution;
     private Point cameraResolution;
-
 
     CameraConfigurationManager(Context context) {
         this.context = context;
@@ -33,12 +29,10 @@ final class CameraConfigurationManager {
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = manager.getDefaultDisplay();
         screenResolution = new Point(display.getWidth(), display.getHeight());
-        Log.d(TAG, "Screen resolution: " + screenResolution);
 
         Point screenResolutionForCamera = new Point();
         screenResolutionForCamera.x = screenResolution.x;
         screenResolutionForCamera.y = screenResolution.y;
-
 
         if (screenResolution.x < screenResolution.y) {
             screenResolutionForCamera.x = screenResolution.y;
@@ -47,13 +41,10 @@ final class CameraConfigurationManager {
 
         cameraResolution = getCameraResolution(parameters, screenResolutionForCamera);
 
-
     }
-
 
     void setDesiredCameraParameters(Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
-        Log.d(TAG, "Setting preview size: " + cameraResolution);
         parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
 
         setZoom(parameters);
@@ -71,7 +62,6 @@ final class CameraConfigurationManager {
         return screenResolution;
     }
 
-
     private static Point getCameraResolution(Camera.Parameters parameters, Point screenResolution) {
 
         String previewSizeValueString = parameters.get("preview-size-values");
@@ -83,7 +73,6 @@ final class CameraConfigurationManager {
         Point cameraResolution = null;
 
         if (previewSizeValueString != null) {
-            Log.d(TAG, "preview-size-values parameter: " + previewSizeValueString);
             cameraResolution = findBestPreviewSizeValue(previewSizeValueString, screenResolution);
         }
 
@@ -106,7 +95,6 @@ final class CameraConfigurationManager {
             previewSize = previewSize.trim();
             int dimPosition = previewSize.indexOf('x');
             if (dimPosition < 0) {
-                Log.w(TAG, "Bad preview-size: " + previewSize);
                 continue;
             }
 
@@ -116,7 +104,7 @@ final class CameraConfigurationManager {
                 newX = Integer.parseInt(previewSize.substring(0, dimPosition));
                 newY = Integer.parseInt(previewSize.substring(dimPosition + 1));
             } catch (NumberFormatException nfe) {
-                Log.w(TAG, "Bad preview-size: " + previewSize);
+                nfe.printStackTrace();
                 continue;
             }
 
@@ -157,14 +145,12 @@ final class CameraConfigurationManager {
         return tenBestValue;
     }
 
-
     private void setZoom(Camera.Parameters parameters) {
 
         String zoomSupportedString = parameters.get("zoom-supported");
         if (zoomSupportedString != null && !Boolean.parseBoolean(zoomSupportedString)) {
             return;
         }
-
 
         int tenDesiredZoom = TEN_DESIRED_ZOOM;
 
@@ -176,7 +162,7 @@ final class CameraConfigurationManager {
                     tenDesiredZoom = tenMaxZoom;
                 }
             } catch (NumberFormatException nfe) {
-                Log.w(TAG, "Bad max-zoom: " + maxZoomString);
+                nfe.printStackTrace();
             }
         }
 
@@ -188,7 +174,7 @@ final class CameraConfigurationManager {
                     tenDesiredZoom = tenMaxZoom;
                 }
             } catch (NumberFormatException nfe) {
-                Log.w(TAG, "Bad taking-picture-zoom-max: " + takingPictureZoomMaxString);
+                nfe.printStackTrace();
             }
         }
 

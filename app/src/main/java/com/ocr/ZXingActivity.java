@@ -19,8 +19,8 @@ import android.widget.Toast;
 import com.google.zxing.WriterException;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.PermissionListener;
+import com.zxing.ZxingConfig;
 import com.zxing.android.CaptureActivity;
-import com.zxing.bean.ZxingConfig;
 import com.zxing.common.Constant;
 import com.zxing.encode.CodeCreator;
 
@@ -48,6 +48,7 @@ public class ZXingActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_zxing);
 
+        initView();
     }
 
     private void initView() {
@@ -84,8 +85,6 @@ public class ZXingActivity extends AppCompatActivity implements View.OnClickList
                                 * 不传的话  默认都为默认不震动  其他都为true
                                 * */
                                 ZxingConfig config = new ZxingConfig();
-                                config.setPlayBeep(true);
-                                config.setShake(true);
                                 intent.putExtra(Constant.INTENT_ZXING_CONFIG, config);
 
                                 startActivityForResult(intent, REQUEST_CODE_SCAN);

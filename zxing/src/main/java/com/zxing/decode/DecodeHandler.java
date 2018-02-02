@@ -18,8 +18,6 @@ import java.util.Map;
 
 public final class DecodeHandler extends Handler {
 
-    private static final String TAG = DecodeHandler.class.getSimpleName();
-
     private final CaptureActivity activity;
     private final MultiFormatReader multiFormatReader;
     private boolean running = true;
@@ -67,20 +65,17 @@ public final class DecodeHandler extends Handler {
         PlanarYUVLuminanceSource source = activity.getCameraManager()
                 .buildLuminanceSource(data, width, height);
 
-
         if (source != null) {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
             try {
                 rawResult = multiFormatReader.decodeWithState(bitmap);
             } catch (ReaderException re) {
-
-                //Log.i("解码异常",re.toString());
+                re.printStackTrace();
             } finally {
                 multiFormatReader.reset();
             }
         }
-
 
         Handler handler = activity.getHandler();
         if (rawResult != null) {

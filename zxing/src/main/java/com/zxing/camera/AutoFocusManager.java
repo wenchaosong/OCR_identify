@@ -3,7 +3,6 @@ package com.zxing.camera;
 import android.annotation.SuppressLint;
 import android.hardware.Camera;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,8 +12,6 @@ import java.util.concurrent.RejectedExecutionException;
  * 聚焦管理
  */
 final class AutoFocusManager implements Camera.AutoFocusCallback {
-
-    private static final String TAG = AutoFocusManager.class.getSimpleName();
 
     /*聚焦间隔*/
     private static final long AUTO_FOCUS_INTERVAL_MS = 1000L;
@@ -52,7 +49,7 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
                 newTask.execute();
                 outstandingTask = newTask;
             } catch (RejectedExecutionException ree) {
-                Log.w(TAG, "Could not request auto focus", ree);
+                ree.printStackTrace();
             }
         }
     }
@@ -66,8 +63,7 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
                     focusing = true;
                 } catch (RuntimeException re) {
                     // Have heard RuntimeException reported in Android 4.0.x+; continue?
-                    Log.w(TAG, "Unexpected exception while focusing", re);
-                    // Try again later to keep cycle going
+                    re.printStackTrace();
                     autoFocusAgainLater();
                 }
             }
@@ -91,8 +87,7 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
             try {
                 camera.cancelAutoFocus();
             } catch (RuntimeException re) {
-                // Have heard RuntimeException reported in Android 4.0.x+; continue?
-                Log.w(TAG, "Unexpected exception while cancelling focusing", re);
+                re.printStackTrace();
             }
         }
     }
@@ -103,7 +98,7 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
             try {
                 Thread.sleep(AUTO_FOCUS_INTERVAL_MS);
             } catch (InterruptedException e) {
-                // continue
+                e.printStackTrace();
             }
             start();
             return null;

@@ -1,8 +1,6 @@
 package com.zxing.common;
 
 /**
- * Created by yzq on 2017/7/20.
- * <p>
  * zxing常量
  */
 public class Constant {

@@ -6,7 +6,6 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.google.zxing.PlanarYUVLuminanceSource;
@@ -23,8 +22,6 @@ import java.io.IOException;
  * @author dswitkin@google.com (Daniel Switkin)
  */
 public final class CameraManager {
-
-    private static final String TAG = CameraManager.class.getSimpleName();
 
     private static CameraManager cameraManager;
 
@@ -57,7 +54,6 @@ public final class CameraManager {
             cameraManager = new CameraManager(context);
         }
     }
-
 
     /**
      * Opens the camera driver and initializes the hardware parameters.
@@ -102,11 +98,6 @@ public final class CameraManager {
         try {
             configManager.setDesiredCameraParameters(theCamera);
         } catch (RuntimeException re) {
-            // Driver failed
-            Log.w(TAG,
-                    "Camera rejected parameters. Setting only minimal safe-mode parameters");
-            Log.i(TAG, "Resetting to saved camera params: "
-                    + parametersFlattened);
             // Reset:
             if (parametersFlattened != null) {
                 parameters = theCamera.getParameters();
@@ -115,9 +106,7 @@ public final class CameraManager {
                     theCamera.setParameters(parameters);
                     configManager.setDesiredCameraParameters(theCamera);
                 } catch (RuntimeException re2) {
-                    // Well, darn. Give up
-                    Log.w(TAG,
-                            "Camera rejected even safe-mode parameters! No configuration");
+                    re2.printStackTrace();
                 }
             }
         }
@@ -143,11 +132,8 @@ public final class CameraManager {
         }
     }
 
-
     /*切换闪光灯*/
     public void switchFlashLight(CaptureActivityHandler handler) {
-        //  Log.i("打开闪光灯", "openFlashLight");
-
         Camera.Parameters parameters = camera.getParameters();
 
         Message msg = new Message();
@@ -160,7 +146,6 @@ public final class CameraManager {
 
             msg.what = Constant.FLASH_CLOSE;
 
-
         } else {
             /*打开闪光灯*/
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -169,7 +154,6 @@ public final class CameraManager {
         camera.setParameters(parameters);
         handler.sendMessage(msg);
     }
-
 
     /**
      * Asks the camera hardware to begin drawing preview frames to the screen.
@@ -214,7 +198,6 @@ public final class CameraManager {
         }
     }
 
-
     /*取景框*/
     public synchronized Rect getFramingRect() {
         if (framingRect == null) {
@@ -227,23 +210,17 @@ public final class CameraManager {
                 return null;
             }
 
-            int screenResolutionX = screenResolution.x;
-
-            int width = (int) (screenResolutionX * 0.6);
-            int height = width;
-
+            int width = (int) (screenResolution.x * 0.7);
 
             /*水平居中  偏上显示*/
             int leftOffset = (screenResolution.x - width) / 2;
-            int topOffset = (screenResolution.y - height) / 5;
+            int topOffset = leftOffset;
 
-            framingRect = new Rect(leftOffset, topOffset, leftOffset + width,
-                    topOffset + height);
-            Log.d(TAG, "Calculated framing rect: " + framingRect);
+            framingRect = new Rect(leftOffset, topOffset, screenResolution.x - leftOffset,
+                    screenResolution.y - 96 * 3 - topOffset);
         }
         return framingRect;
     }
-
 
     /**
      * Like {@link #getFramingRect} but coordinates are in terms of the preview
@@ -307,7 +284,6 @@ public final class CameraManager {
             int topOffset = (screenResolution.y - height) / 2;
             framingRect = new Rect(leftOffset, topOffset, leftOffset + width,
                     topOffset + height);
-            Log.d(TAG, "Calculated manual framing rect: " + framingRect);
             framingRectInPreview = null;
         } else {
             requestedFramingRectWidth = width;

@@ -30,6 +30,10 @@
             android:configChanges="screenSize|orientation"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
         <activity android:name=".ZXingActivity" />
+        <activity
+            android:name="com.zxing.android.CaptureActivity"
+            android:configChanges="screenSize|orientation"
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
     </application>
 
 </manifest>
