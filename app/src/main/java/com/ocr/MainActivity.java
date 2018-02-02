@@ -21,9 +21,8 @@ import com.baidu.ocr.sdk.model.IDCardResult;
 import com.baidu.ocr.sdk.model.OcrRequestParams;
 import com.baidu.ocr.sdk.model.OcrResponseResult;
 import com.baidu.ocr.ui.camera.CameraActivity;
-import com.zxing.ZxingConfig;
-import com.zxing.android.CaptureActivity;
-import com.zxing.common.Constant;
+import com.baidu.ocr.ui.camera.CameraNativeHelper;
+import com.baidu.ocr.ui.camera.CameraView;
 
 import java.io.File;
 
@@ -32,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CAMERA = 102;
     private static final int REQUEST_CODE_DRIVING_LICENSE = 103;
     private static final int REQUEST_CODE_VEHICLE_LICENSE = 104;
-    private static final int REQUEST_CODE_SCAN = 105;
     private TextView mContent;
 
     @Override
@@ -41,17 +39,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mContent = (TextView) findViewById(R.id.content);
-        findViewById(R.id.zxing_scan).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
-                ZxingConfig config = new ZxingConfig();
-                intent.putExtra(Constant.INTENT_ZXING_CONFIG, config);
-                startActivityForResult(intent, REQUEST_CODE_SCAN);
-            }
-        });
 
-        // 正面
+        // 正面(手动)
         findViewById(R.id.id_card_front_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,13 +52,47 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 反面
+        // 反面(手动)
         findViewById(R.id.id_card_back_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, CameraActivity.class);
                 intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
                         FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_ID_CARD_BACK);
+                startActivityForResult(intent, REQUEST_CODE_CAMERA);
+            }
+        });
+
+        // 正面(自动)
+        findViewById(R.id.id_card_front_button_auto).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_NATIVE_ENABLE, true);
+                // KEY_NATIVE_MANUAL设置了之后CameraActivity中不再自动初始化和释放模型
+                // 请手动使用CameraNativeHelper初始化和释放模型
+                // 推荐这样做，可以避免一些activity切换导致的不必要的异常
+                intent.putExtra(CameraActivity.KEY_NATIVE_MANUAL, true);
+                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_ID_CARD_FRONT);
+                startActivityForResult(intent, REQUEST_CODE_CAMERA);
+            }
+        });
+
+        // 反面(自动)
+        findViewById(R.id.id_card_back_button_auto).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
+                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent.putExtra(CameraActivity.KEY_NATIVE_ENABLE, true);
+                // KEY_NATIVE_MANUAL设置了之后CameraActivity中不再自动初始化和释放模型
+                // 请手动使用CameraNativeHelper初始化和释放模型
+                // 推荐这样做，可以避免一些activity切换导致的不必要的异常
+                intent.putExtra(CameraActivity.KEY_NATIVE_MANUAL, true);
                 intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_ID_CARD_BACK);
                 startActivityForResult(intent, REQUEST_CODE_CAMERA);
             }
@@ -118,34 +141,69 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initAccessTokenWithAkSk() {
-        OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
-                                                      @Override
-                                                      public void onResult(AccessToken result) {
-                                                          Log.d("MainActivity", "onResult: " + result.toString());
-                                                          runOnUiThread(new Runnable() {
-                                                              @Override
-                                                              public void run() {
-                                                                  Toast.makeText(MainActivity.this, "初始化认证成功", Toast.LENGTH_SHORT).show();
-                                                              }
-                                                          });
-                                                      }
+        OCR.getInstance().initAccessTokenWithAkSk(
+                new OnResultListener<AccessToken>() {
+                    @Override
+                    public void onResult(AccessToken result) {
 
-                                                      @Override
-                                                      public void onError(OCRError error) {
-                                                          error.printStackTrace();
-                                                          Log.e("MainActivity", "onError: " + error.getMessage());
-                                                          runOnUiThread(new Runnable() {
-                                                              @Override
-                                                              public void run() {
-                                                                  Toast.makeText(MainActivity.this, "初始化认证失败,请检查 key", Toast.LENGTH_SHORT).show();
-                                                              }
-                                                          });
-                                                      }
-                                                  }, getApplicationContext(),
+                        // 本地自动识别需要初始化
+                        initLicense();
+
+                        Log.d("MainActivity", "onResult: " + result.toString());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "初始化认证成功", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(OCRError error) {
+                        error.printStackTrace();
+                        Log.e("MainActivity", "onError: " + error.getMessage());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "初始化认证失败,请检查 key", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }, getApplicationContext(),
                 // 需要自己配置 https://console.bce.baidu.com
                 "oH6tqEsBX2PSW2OViQyd2yYA",
                 // 需要自己配置 https://console.bce.baidu.com
                 "A36f7UrseglvtH9jGP5u7bU9uGxIjZ31");
+    }
+
+    private void initLicense() {
+        CameraNativeHelper.init(this, OCR.getInstance().getLicense(),
+                new CameraNativeHelper.CameraNativeInitCallback() {
+                    @Override
+                    public void onError(int errorCode, Throwable e) {
+                        final String msg;
+                        switch (errorCode) {
+                            case CameraView.NATIVE_SOLOAD_FAIL:
+                                msg = "加载so失败，请确保apk中存在ui部分的so";
+                                break;
+                            case CameraView.NATIVE_AUTH_FAIL:
+                                msg = "授权本地质量控制token获取失败";
+                                break;
+                            case CameraView.NATIVE_INIT_FAIL:
+                                msg = "本地质量控制";
+                                break;
+                            default:
+                                msg = String.valueOf(errorCode);
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this,
+                                        "本地质量控制初始化错误，错误原因： " + msg, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
     }
 
     @Override
@@ -174,12 +232,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_VEHICLE_LICENSE && resultCode == Activity.RESULT_OK) {
             String filePath = FileUtil.getSaveFile(getApplicationContext()).getAbsolutePath();
             recVehicleCard(filePath);
-        }
-        if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                String content = data.getStringExtra(Constant.CODED_CONTENT);
-                Log.d("aaa", "扫描结果为：" + content);
-            }
         }
     }
 
@@ -331,9 +383,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
+        CameraNativeHelper.release();
         // 释放内存资源
         OCR.getInstance().release();
+        super.onDestroy();
+
     }
 }

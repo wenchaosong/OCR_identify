@@ -1,6 +1,3 @@
-<!--
-  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
-  -->
 <resources>
     <string name="app_name">OCR_UI</string>
     <string name="camera_permission_required">本功能需要相机权限！</string>

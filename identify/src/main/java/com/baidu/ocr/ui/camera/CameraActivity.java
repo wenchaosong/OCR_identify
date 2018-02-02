@@ -39,6 +39,7 @@ public class CameraActivity extends Activity {
     public static final String KEY_CONTENT_TYPE = "contentType";
     public static final String KEY_NATIVE_TOKEN = "nativeToken";
     public static final String KEY_NATIVE_ENABLE = "nativeEnable";
+    public static final String KEY_NATIVE_MANUAL = "nativeEnableManual";
 
     public static final String CONTENT_TYPE_GENERAL = "general";
     public static final String CONTENT_TYPE_ID_CARD_FRONT = "IDCardFront";
@@ -52,6 +53,9 @@ public class CameraActivity extends Activity {
     private File outputFile;
     private String contentType;
     private Handler handler = new Handler();
+
+    private boolean isNativeEnable;
+    private boolean isNativeManual;
 
     private OCRCameraLayout takePictureContainer;
     private OCRCameraLayout cropContainer;
@@ -73,6 +77,7 @@ public class CameraActivity extends Activity {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -89,7 +94,6 @@ public class CameraActivity extends Activity {
         takePhotoBtn = (ImageView) findViewById(R.id.take_photo_button);
         findViewById(R.id.album_button).setOnClickListener(albumButtonOnClickListener);
         takePhotoBtn.setOnClickListener(takeButtonOnClickListener);
-        findViewById(R.id.close_button).setOnClickListener(closeButtonOnClickListener);
 
         // confirm result;
         displayImageView = (ImageView) findViewById(R.id.display_image_view);
@@ -125,8 +129,10 @@ public class CameraActivity extends Activity {
     private void initParams() {
         String outputPath = getIntent().getStringExtra(KEY_OUTPUT_FILE_PATH);
         final String token = getIntent().getStringExtra(KEY_NATIVE_TOKEN);
-        boolean isNativeEnable = getIntent().getBooleanExtra(KEY_NATIVE_ENABLE, true);
-        if (token == null) {
+        isNativeEnable = getIntent().getBooleanExtra(KEY_NATIVE_ENABLE, true);
+        isNativeManual = getIntent().getBooleanExtra(KEY_NATIVE_MANUAL, false);
+
+        if (token == null && !isNativeManual) {
             isNativeEnable = false;
         }
 
@@ -167,7 +173,7 @@ public class CameraActivity extends Activity {
 
         // 身份证本地能力初始化
         if (maskType == MaskView.MASK_TYPE_ID_CARD_FRONT || maskType == MaskView.MASK_TYPE_ID_CARD_BACK) {
-            if (isNativeEnable) {
+            if (isNativeEnable && !isNativeManual) {
                 initNative(token);
             }
         }
@@ -177,30 +183,13 @@ public class CameraActivity extends Activity {
     }
 
     private void initNative(final String token) {
-        CameraThreadPool.execute(new Runnable() {
-            @Override
-            public void run() {
-                // 加载本地so失败, 异常返回getloadSoException
-                if (IDcardQualityProcess.getLoadSoException() != null) {
-                    cameraView.setInitNativeStatus(CameraView.NATIVE_SOLOAD_FAIL);
-                    return;
-                }
-                // 授权状态
-                int authStatus = IDcardQualityProcess.init(token);
-                // 加载模型状态
-                int initModelStatus = IDcardQualityProcess.getInstance()
-                        .idcardQualityInit(CameraActivity.this.getAssets(),
-                                "models");
-                if (authStatus != 0) {
-                    cameraView.setInitNativeStatus(CameraView.NATIVE_AUTH_FAIL);
-                    return;
-                }
-                if (initModelStatus != 0) {
-                    cameraView.setInitNativeStatus(CameraView.NATIVE_INIT_FAIL);
-                    return;
-                }
-            }
-        });
+        CameraNativeHelper.init(CameraActivity.this, token,
+                new CameraNativeHelper.CameraNativeInitCallback() {
+                    @Override
+                    public void onError(int errorCode, Throwable e) {
+                        cameraView.setInitNativeStatus(errorCode);
+                    }
+                });
     }
 
     private void showTakePicture() {
@@ -289,7 +278,6 @@ public class CameraActivity extends Activity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                     Intent intent = new Intent();
                     intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, contentType);
                     setResult(Activity.RESULT_OK, intent);
@@ -361,15 +349,6 @@ public class CameraActivity extends Activity {
         doConfirmResult();
     }
 
-    // confirm result;
-    private View.OnClickListener closeButtonOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            setResult(Activity.RESULT_CANCELED);
-            finish();
-        }
-    };
-
     private void doConfirmResult() {
         CameraThreadPool.execute(new Runnable() {
             @Override
@@ -382,7 +361,6 @@ public class CameraActivity extends Activity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 Intent intent = new Intent();
                 intent.putExtra(CameraActivity.KEY_CONTENT_TYPE, contentType);
                 setResult(Activity.RESULT_OK, intent);
@@ -415,7 +393,12 @@ public class CameraActivity extends Activity {
 
     private String getRealPathFromURI(Uri contentURI) {
         String result;
-        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(contentURI, null, null, null, null);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         if (cursor == null) {
             result = contentURI.getPath();
         } else {
@@ -495,10 +478,20 @@ public class CameraActivity extends Activity {
         }
     }
 
+    /**
+     * 做一些收尾工作
+     */
+    private void doClear() {
+        CameraThreadPool.cancelAutoFocusTimer();
+        if (isNativeEnable && !isNativeManual) {
+            IDcardQualityProcess.getInstance().releaseModel();
+        }
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-//        cameraView.release();
+        this.doClear();
     }
 }

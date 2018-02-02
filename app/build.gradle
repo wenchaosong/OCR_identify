@@ -24,6 +24,5 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/ocr-sdk.jar')
     compile project(':identify')
-    compile project(':zxing')
     compile 'com.yanzhenjie:permission:1.1.0' // 权限检查
 }

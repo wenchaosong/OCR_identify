@@ -11,8 +11,10 @@ import com.baidu.idl.authority.IDLAuthorityException;
 import com.baidu.idl.license.License;
 import com.baidu.idl.util.UIThread;
 
-public class IDcardQualityProcess {
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+public class IDcardQualityProcess {
+    final ReentrantReadWriteLock nativeModelLock = new ReentrantReadWriteLock();
     private static IDcardQualityProcess mInstance;
     private static String tokenString;
     private static int mAuthorityStatus;
@@ -57,7 +59,10 @@ public class IDcardQualityProcess {
     public int idcardQualityInit(AssetManager assetManager, String modelPath) {
         if (mAuthorityStatus == 0) {
             hasReleased = false;
-            return this.idcardQualityModelInit(assetManager, modelPath);
+            nativeModelLock.writeLock().lock();
+            int status = this.idcardQualityModelInit(assetManager, modelPath);
+            nativeModelLock.writeLock().unlock();
+            return status;
         } else {
             return mAuthorityStatus;
         }
@@ -66,7 +71,9 @@ public class IDcardQualityProcess {
     public int idcardQualityRelease() {
         if (mAuthorityStatus == 0) {
             hasReleased = true;
+            nativeModelLock.writeLock().lock();
             this.idcardQualityCaptchaRelease();
+            nativeModelLock.writeLock().unlock();
             return 0;
         } else {
             return mAuthorityStatus;
@@ -74,6 +81,7 @@ public class IDcardQualityProcess {
     }
 
     public int idcardQualityDetectionImg(Bitmap img, boolean isfont) {
+        int status;
         if (mAuthorityStatus == 0) {
             if (hasReleased) {
                 return -1;
@@ -81,7 +89,10 @@ public class IDcardQualityProcess {
             int imgHeight = img.getHeight();
             int imgWidth = img.getWidth();
             byte[] imageData = this.getRGBImageData(img);
-            return this.idcardQualityProcess(imageData, imgHeight, imgWidth, isfont, 3);
+            nativeModelLock.readLock().lock();
+            status = this.idcardQualityProcess(imageData, imgHeight, imgWidth, isfont, 3);
+            nativeModelLock.readLock().unlock();
+            return status;
         } else {
             return mAuthorityStatus;
         }

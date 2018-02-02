@@ -96,7 +96,7 @@ public interface ICameraControl {
     /**
      * 设置水平方向
      *
-     * @param displayOrientation 参数值见 {@link com.baidu.ocr.ui.camera.CameraView.Orientation}
+     * @param displayOrientation 参数值见 {@link CameraView.Orientation}
      */
     void setDisplayOrientation(@CameraView.Orientation int displayOrientation);
 

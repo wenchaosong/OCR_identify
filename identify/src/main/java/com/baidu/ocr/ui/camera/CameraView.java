@@ -64,17 +64,17 @@ public class CameraView extends FrameLayout {
     public static final int NATIVE_AUTH_INIT_SUCCESS = 0;
 
     /**
-     * 本地模型授权，加载成功
+     * 本地模型授权，缺少SO
      */
     public static final int NATIVE_SOLOAD_FAIL = 10;
 
     /**
-     * 本地模型授权，加载成功
+     * 本地模型授权，授权失败，token异常
      */
     public static final int NATIVE_AUTH_FAIL = 11;
 
     /**
-     * 本地模型授权，加载成功
+     * 本地模型授权，模型加载失败
      */
     public static final int NATIVE_INIT_FAIL = 12;
 
@@ -246,6 +246,14 @@ public class CameraView extends FrameLayout {
         if (cameraControl.getAbortingScan().get()) {
             return 0;
         }
+
+        Rect previewFrame = cameraControl.getPreviewFrame();
+
+        if (maskView.getWidth() == 0 || maskView.getHeight() == 0
+                || previewFrame.width() == 0 || previewFrame.height() == 0) {
+            return 0;
+        }
+
         // BitmapRegionDecoder不会将整个图片加载到内存。
         BitmapRegionDecoder decoder = null;
         try {
@@ -253,8 +261,6 @@ public class CameraView extends FrameLayout {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        Rect previewFrame = cameraControl.getPreviewFrame();
 
         int width = rotation % 180 == 0 ? decoder.getWidth() : decoder.getHeight();
         int height = rotation % 180 == 0 ? decoder.getHeight() : decoder.getWidth();
@@ -410,7 +416,7 @@ public class CameraView extends FrameLayout {
                 message = "请将镜头靠近身份证";
                 break;
             case 7:
-                message = "请确保身份证完整";
+                message = "请将身份证完整置于取景框内";
                 break;
             case NATIVE_AUTH_FAIL:
                 message = "本地质量控制授权失败";
@@ -431,11 +437,11 @@ public class CameraView extends FrameLayout {
     }
 
     private void init() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            cameraControl = new Camera2Control(getContext());
-//        } else {
-//
-//        }
+        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        //            cameraControl = new Camera2Control(getContext());
+        //        } else {
+        //
+        //        }
         cameraControl = new Camera1Control(getContext());
 
         displayView = cameraControl.getDisplayView();
@@ -499,10 +505,16 @@ public class CameraView extends FrameLayout {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private Bitmap crop(File outputFile, byte[] data, int rotation) {
         try {
+            Rect previewFrame = cameraControl.getPreviewFrame();
+
+            if (maskView.getWidth() == 0 || maskView.getHeight() == 0
+                    || previewFrame.width() == 0 || previewFrame.height() == 0) {
+                return null;
+            }
+
             // BitmapRegionDecoder不会将整个图片加载到内存。
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(data, 0, data.length, true);
 
-            Rect previewFrame = cameraControl.getPreviewFrame();
 
             int width = rotation % 180 == 0 ? decoder.getWidth() : decoder.getHeight();
             int height = rotation % 180 == 0 ? decoder.getHeight() : decoder.getWidth();
@@ -609,9 +621,9 @@ public class CameraView extends FrameLayout {
         return null;
     }
 
-//    public void release() {
-//        IDcardQualityProcess.getInstance().releaseModel();
-//    }
+    public void release() {
+        IDcardQualityProcess.getInstance().releaseModel();
+    }
 
     private class CameraViewTakePictureCallback implements ICameraControl.OnTakePictureCallback {
 
