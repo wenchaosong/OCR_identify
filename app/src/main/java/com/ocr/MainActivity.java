@@ -37,6 +37,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mContent = (TextView) findViewById(R.id.content);
+        findViewById(R.id.zxing_scan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, ZXingActivity.class));
+            }
+        });
 
         // 正面
         findViewById(R.id.id_card_front_button).setOnClickListener(new View.OnClickListener() {
