@@ -1,15 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion Integer.parseInt(project.CompileSdkVersion)
+    buildToolsVersion project.BuildToolsVersion
+
     defaultConfig {
         applicationId "com.ocr"
-        minSdkVersion 15
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion Integer.parseInt(project.MinSdkVersion)
+        targetSdkVersion Integer.parseInt(project.TargetSdkVersion)
+        versionCode Integer.parseInt(project.VersionCode)
+        versionName project.VersionName
     }
+
     buildTypes {
         release {
             minifyEnabled false

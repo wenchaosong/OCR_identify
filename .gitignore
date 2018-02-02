@@ -30,6 +30,7 @@ Thumbs.db
 .idea
 .gradle
 build/
-.idea/workspace.xml
-.idea/libraries
+gradle/
+gradlew
+gradlew.bat
 
