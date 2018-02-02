@@ -21,6 +21,9 @@ import com.baidu.ocr.sdk.model.IDCardResult;
 import com.baidu.ocr.sdk.model.OcrRequestParams;
 import com.baidu.ocr.sdk.model.OcrResponseResult;
 import com.baidu.ocr.ui.camera.CameraActivity;
+import com.zxing.ZxingConfig;
+import com.zxing.android.CaptureActivity;
+import com.zxing.common.Constant;
 
 import java.io.File;
 
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_CAMERA = 102;
     private static final int REQUEST_CODE_DRIVING_LICENSE = 103;
     private static final int REQUEST_CODE_VEHICLE_LICENSE = 104;
+    private static final int REQUEST_CODE_SCAN = 105;
     private TextView mContent;
 
     @Override
@@ -40,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.zxing_scan).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ZXingActivity.class));
+                Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+                ZxingConfig config = new ZxingConfig();
+                intent.putExtra(Constant.INTENT_ZXING_CONFIG, config);
+                startActivityForResult(intent, REQUEST_CODE_SCAN);
             }
         });
 
@@ -112,29 +119,29 @@ public class MainActivity extends AppCompatActivity {
 
     private void initAccessTokenWithAkSk() {
         OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
-              @Override
-              public void onResult(AccessToken result) {
-                  Log.d("MainActivity", "onResult: " + result.toString());
-                  runOnUiThread(new Runnable() {
-                      @Override
-                      public void run() {
-                          Toast.makeText(MainActivity.this, "初始化认证成功", Toast.LENGTH_SHORT).show();
-                      }
-                  });
-              }
+                                                      @Override
+                                                      public void onResult(AccessToken result) {
+                                                          Log.d("MainActivity", "onResult: " + result.toString());
+                                                          runOnUiThread(new Runnable() {
+                                                              @Override
+                                                              public void run() {
+                                                                  Toast.makeText(MainActivity.this, "初始化认证成功", Toast.LENGTH_SHORT).show();
+                                                              }
+                                                          });
+                                                      }
 
-              @Override
-              public void onError(OCRError error) {
-                  error.printStackTrace();
-                  Log.e("MainActivity", "onError: " + error.getMessage());
-                  runOnUiThread(new Runnable() {
-                      @Override
-                      public void run() {
-                          Toast.makeText(MainActivity.this, "初始化认证失败,请检查 key", Toast.LENGTH_SHORT).show();
-                      }
-                  });
-              }
-          }, getApplicationContext(),
+                                                      @Override
+                                                      public void onError(OCRError error) {
+                                                          error.printStackTrace();
+                                                          Log.e("MainActivity", "onError: " + error.getMessage());
+                                                          runOnUiThread(new Runnable() {
+                                                              @Override
+                                                              public void run() {
+                                                                  Toast.makeText(MainActivity.this, "初始化认证失败,请检查 key", Toast.LENGTH_SHORT).show();
+                                                              }
+                                                          });
+                                                      }
+                                                  }, getApplicationContext(),
                 // 需要自己配置 https://console.bce.baidu.com
                 "oH6tqEsBX2PSW2OViQyd2yYA",
                 // 需要自己配置 https://console.bce.baidu.com
@@ -167,6 +174,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_VEHICLE_LICENSE && resultCode == Activity.RESULT_OK) {
             String filePath = FileUtil.getSaveFile(getApplicationContext()).getAbsolutePath();
             recVehicleCard(filePath);
+        }
+        if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                String content = data.getStringExtra(Constant.CODED_CONTENT);
+                Log.d("aaa", "扫描结果为：" + content);
+            }
         }
     }
 

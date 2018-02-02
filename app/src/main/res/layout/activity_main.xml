@@ -50,7 +50,7 @@
         android:id="@+id/zxing_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="扫一扫"
+        android:text="自动扫描"
         tools:ignore="HardcodedText" />
 
     <TextView

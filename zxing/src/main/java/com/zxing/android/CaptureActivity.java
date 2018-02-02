@@ -34,7 +34,6 @@ import java.io.IOException;
  */
 public class CaptureActivity extends Activity implements SurfaceHolder.Callback, View.OnClickListener {
 
-    private static final String TAG = CaptureActivity.class.getSimpleName();
     private ZxingConfig config;
     private SurfaceView previewView;
     private ViewfinderView viewfinderView;
