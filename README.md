@@ -1,6 +1,9 @@
 
 # OCR 身份证识别
 
+[![](https://jitpack.io/v/wenchaosong/OCR_identify.svg)](https://jitpack.io/#wenchaosong/OCR_identify)
+[![Hex.pm](https://img.shields.io/github/stars/wenchaosong/OCR_identify.svg)](https://github.com/wenchaosong/OCR_identify)
+
 ### 根据百度文字识别 api 封装,能快速识别身份证信息,使用非常方便
 ### 好用的话大家可以 star,有好的建议也可以提出来哦
 ### 身份证自动识别已集成
@@ -26,7 +29,7 @@ repositories {
 - Step 2. 在你的app build.gradle 的 dependencies 中添加依赖
 ```
 dependencies {
-	compile 'com.github.wenchaosong:OCR_identify:3.0.8'
+	compile 'com.github.wenchaosong:OCR_identify:{latest}'
 }
 ```
 - Step 3. 获取 appkey [去百度云创建应用](https://login.bce.baidu.com/?account=)
