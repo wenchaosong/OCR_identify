@@ -29,7 +29,7 @@ repositories {
 - Step 2. 在你的app build.gradle 的 dependencies 中添加依赖
 ```
 dependencies {
-	compile 'com.github.wenchaosong:OCR_identify:{latest}'
+	compile 'com.github.wenchaosong:OCR_identify:3.0.8'
 }
 ```
 - Step 3. 获取 appkey [去百度云创建应用](https://login.bce.baidu.com/?account=)
