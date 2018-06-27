@@ -2,7 +2,7 @@
 # OCR 身份证识别
 
 [![](https://jitpack.io/v/wenchaosong/OCR_identify.svg)](https://jitpack.io/#wenchaosong/OCR_identify)
-[![Hex.pm](https://img.shields.io/github/stars/wenchaosong/OCR_identify.svg)](https://github.com/wenchaosong/OCR_identify)
+[![](https://img.shields.io/github/stars/wenchaosong/OCR_identify.svg)](https://github.com/wenchaosong/OCR_identify)
 
 ### 根据百度文字识别 api 封装,能快速识别身份证信息,使用非常方便
 ### 好用的话大家可以 star,有好的建议也可以提出来哦
