@@ -1,4 +1,10 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.crop;
+
+
+import com.baidu.ocr.ui.util.DimensionUtil;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -12,8 +18,6 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-
-import com.baidu.ocr.ui.util.DimensionUtil;
 
 public class FrameOverlayView extends View {
 
@@ -116,6 +120,8 @@ public class FrameOverlayView extends View {
     public void setTypeWide() {
         shapeType = 1;
     }
+
+
 
     private void translate(float x, float y) {
         if (x > 0) {

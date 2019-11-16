@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion Integer.parseInt(project.CompileSdkVersion)
-    buildToolsVersion project.BuildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "com.ocr"
-        minSdkVersion Integer.parseInt(project.MinSdkVersion)
-        targetSdkVersion Integer.parseInt(project.TargetSdkVersion)
-        versionCode Integer.parseInt(project.VersionCode)
-        versionName project.VersionName
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
     }
 
     buildTypes {
@@ -21,8 +21,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/ocr-sdk.jar')
-    compile project(':identify')
-    compile 'com.yanzhenjie:permission:1.1.0' // 权限检查
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
+    implementation files('libs/ocr-sdk.jar')
+    implementation project(':identify')
 }

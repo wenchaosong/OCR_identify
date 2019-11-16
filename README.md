@@ -30,7 +30,7 @@ repositories {
 - Step 2. 在你的app build.gradle 的 dependencies 中添加依赖
 ```
 dependencies {
-	compile 'com.github.wenchaosong:OCR_identify:3.0.8'
+	compile 'com.github.wenchaosong:OCR_identify:3.0.9'
 }
 ```
 - Step 3. 获取 appkey [去百度云创建应用](https://login.bce.baidu.com/?account=)
@@ -39,7 +39,7 @@ dependencies {
 ```
 - Step 4. 初始化
 ```
-OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
+OCR.getInstance(this).initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
 
@@ -88,7 +88,7 @@ private void recIDCard(String idCardSide, String filePath) {
     param.setImageFile(new File(filePath));
     param.setIdCardSide(idCardSide);
     param.setDetectDirection(true);
-    OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {
+    OCR.getInstance(this).recognizeIDCard(param, new OnResultListener<IDCardResult>() {
         @Override
         public void onResult(IDCardResult result) {
             if (result != null) {

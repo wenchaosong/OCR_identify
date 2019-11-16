@@ -1,4 +1,16 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.camera;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import com.baidu.idcardquality.IDcardQualityProcess;
+import com.baidu.ocr.ui.R;
+import com.baidu.ocr.ui.crop.CropView;
+import com.baidu.ocr.ui.crop.FrameOverlayView;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,15 +33,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.baidu.idcardquality.IDcardQualityProcess;
-import com.baidu.ocr.ui.R;
-import com.baidu.ocr.ui.crop.CropView;
-import com.baidu.ocr.ui.crop.FrameOverlayView;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 public class CameraActivity extends Activity {
 
     public static final String KEY_OUTPUT_FILE_PATH = "outputFilePath";
@@ -42,6 +45,7 @@ public class CameraActivity extends Activity {
     public static final String CONTENT_TYPE_ID_CARD_FRONT = "IDCardFront";
     public static final String CONTENT_TYPE_ID_CARD_BACK = "IDCardBack";
     public static final String CONTENT_TYPE_BANK_CARD = "bankCard";
+    public static final String CONTENT_TYPE_PASSPORT = "passport";
 
     private static final int REQUEST_CODE_PICK_IMAGE = 100;
     private static final int PERMISSIONS_REQUEST_CAMERA = 800;
@@ -68,7 +72,7 @@ public class CameraActivity extends Activity {
         @Override
         public boolean onRequestPermission() {
             ActivityCompat.requestPermissions(CameraActivity.this,
-                    new String[]{Manifest.permission.CAMERA},
+                    new String[] {Manifest.permission.CAMERA},
                     PERMISSIONS_REQUEST_CAMERA);
             return false;
         }
@@ -114,13 +118,25 @@ public class CameraActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        cameraView.start();
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
         cameraView.stop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cameraView.start();
     }
 
     private void initParams() {
@@ -161,6 +177,10 @@ public class CameraActivity extends Activity {
                 maskType = MaskView.MASK_TYPE_BANK_CARD;
                 overlayView.setVisibility(View.INVISIBLE);
                 break;
+            case CONTENT_TYPE_PASSPORT:
+                maskType = MaskView.MASK_TYPE_PASSPORT;
+                overlayView.setVisibility(View.INVISIBLE);
+                break;
             case CONTENT_TYPE_GENERAL:
             default:
                 maskType = MaskView.MASK_TYPE_NONE;
@@ -182,11 +202,11 @@ public class CameraActivity extends Activity {
     private void initNative(final String token) {
         CameraNativeHelper.init(CameraActivity.this, token,
                 new CameraNativeHelper.CameraNativeInitCallback() {
-                    @Override
-                    public void onError(int errorCode, Throwable e) {
-                        cameraView.setInitNativeStatus(errorCode);
-                    }
-                });
+            @Override
+            public void onError(int errorCode, Throwable e) {
+                cameraView.setInitNativeStatus(errorCode);
+            }
+        });
     }
 
     private void showTakePicture() {
@@ -231,7 +251,7 @@ public class CameraActivity extends Activity {
                     != PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     ActivityCompat.requestPermissions(CameraActivity.this,
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
                             PERMISSIONS_EXTERNAL_STORAGE);
                     return;
                 }
@@ -406,7 +426,7 @@ public class CameraActivity extends Activity {
         }
         return result;
     }
-
+    
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -477,6 +497,7 @@ public class CameraActivity extends Activity {
 
     /**
      * 做一些收尾工作
+     *
      */
     private void doClear() {
         CameraThreadPool.cancelAutoFocusTimer();

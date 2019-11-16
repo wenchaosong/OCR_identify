@@ -1,12 +1,26 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.camera;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import com.baidu.idcardquality.IDcardQualityProcess;
+import com.baidu.ocr.ui.R;
+import com.baidu.ocr.ui.util.DimensionUtil;
+import com.baidu.ocr.ui.util.ImageUtil;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.IntDef;
@@ -18,15 +32,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.baidu.idcardquality.IDcardQualityProcess;
-import com.baidu.ocr.ui.R;
-import com.baidu.ocr.ui.util.DimensionUtil;
-import com.baidu.ocr.ui.util.ImageUtil;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * 负责，相机的管理。同时提供，裁剪遮罩功能。
@@ -86,9 +91,9 @@ public class CameraView extends FrameLayout {
     }
 
     /**
-     * 本地检测初始化，模型加载标识
+     *  本地检测初始化，模型加载标识
      */
-    private int initNativeStatus = NATIVE_AUTH_INIT_SUCCESS;
+    private int initNativeStatus  = NATIVE_AUTH_INIT_SUCCESS;
 
     @IntDef({ORIENTATION_PORTRAIT, ORIENTATION_HORIZONTAL, ORIENTATION_INVERT})
     public @interface Orientation {
@@ -144,7 +149,6 @@ public class CameraView extends FrameLayout {
     public void setOrientation(@Orientation int orientation) {
         cameraControl.setDisplayOrientation(orientation);
     }
-
     public CameraView(Context context) {
         super(context);
         init();
@@ -202,6 +206,9 @@ public class CameraView extends FrameLayout {
                 break;
             case MaskView.MASK_TYPE_BANK_CARD:
                 hintResourceId = R.drawable.bd_ocr_hint_align_bank_card;
+                break;
+            case MaskView.MASK_TYPE_PASSPORT:
+                hintView.setVisibility(INVISIBLE);
                 break;
             case MaskView.MASK_TYPE_NONE:
             default:
@@ -264,7 +271,7 @@ public class CameraView extends FrameLayout {
 
         Rect frameRect = maskView.getFrameRectExtend();
 
-        int left = width * frameRect.left / maskView.getWidth();
+        int left =  width * frameRect.left / maskView.getWidth();
         int top = height * frameRect.top / maskView.getHeight();
         int right = width * frameRect.right / maskView.getWidth();
         int bottom = height * frameRect.bottom / maskView.getHeight();
@@ -331,9 +338,7 @@ public class CameraView extends FrameLayout {
         options.inDensity = Math.max(options.outWidth, options.outHeight);
         options.inTargetDensity = size;
         options.inPreferredConfig = Bitmap.Config.RGB_565;
-
         Bitmap bitmap = decoder.decodeRegion(region, options);
-
         if (rotation != 0) {
             // 只能是裁剪完之后再旋转了。有没有别的更好的方案呢？
             Matrix matrix = new Matrix();
@@ -434,11 +439,11 @@ public class CameraView extends FrameLayout {
     }
 
     private void init() {
-        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //            cameraControl = new Camera2Control(getContext());
-        //        } else {
-        //
-        //        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            cameraControl = new Camera2Control(getContext());
+//        } else {
+//
+//        }
         cameraControl = new Camera1Control(getContext());
 
         displayView = cameraControl.getDisplayView();
@@ -495,8 +500,9 @@ public class CameraView extends FrameLayout {
      * 所以需要做旋转处理。
      *
      * @param outputFile 写入照片的文件。
-     * @param data       原始照片数据。
+     * @param data  原始照片数据。
      * @param rotation   照片exif中的旋转角度。
+     *
      * @return 裁剪好的bitmap。
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -511,6 +517,7 @@ public class CameraView extends FrameLayout {
 
             // BitmapRegionDecoder不会将整个图片加载到内存。
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(data, 0, data.length, true);
+
 
 
             int width = rotation % 180 == 0 ? decoder.getWidth() : decoder.getHeight();

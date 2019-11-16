@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+  -->
 <resources>
     <declare-styleable name="OCRCameraLayout">
         <attr name="contentView" format="reference" />

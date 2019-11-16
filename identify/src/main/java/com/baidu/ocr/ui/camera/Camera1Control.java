@@ -1,4 +1,15 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.camera;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.Manifest;
 import android.content.Context;
@@ -12,14 +23,6 @@ import android.support.v4.app.ActivityCompat;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 5.0以下相机API的封装。
@@ -74,7 +77,7 @@ public class Camera1Control implements ICameraControl {
 
     private void onRequestDetect(byte[] data) {
         // 相机已经关闭
-        if (camera == null || data == null) {
+        if (camera == null || data == null || optSize == null) {
             return;
         }
 
@@ -84,11 +87,11 @@ public class Camera1Control implements ICameraControl {
             os = new ByteArrayOutputStream(data.length);
             img.compressToJpeg(new Rect(0, 0, optSize.width, optSize.height), 80, os);
             byte[] jpeg = os.toByteArray();
-            int status = detectCallback.onDetect(jpeg, getCameraRotation());
+        int status = detectCallback.onDetect(jpeg, getCameraRotation());
 
-            if (status == 0) {
-                clearPreviewCallback();
-            }
+        if (status == 0) {
+            clearPreviewCallback();
+        }
         } catch (OutOfMemoryError e) {
             // 内存溢出则取消当次操作
         } finally {
@@ -236,8 +239,7 @@ public class Camera1Control implements ICameraControl {
 
         } catch (RuntimeException e) {
             e.printStackTrace();
-            startPreview(false);
-            ;
+            startPreview(false);;
             takingPicture.set(false);
         }
     }

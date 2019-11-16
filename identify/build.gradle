@@ -1,19 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion Integer.parseInt(project.CompileSdkVersion)
-    buildToolsVersion project.BuildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion Integer.parseInt(project.MinSdkVersion)
-        targetSdkVersion Integer.parseInt(project.TargetSdkVersion)
-        versionCode Integer.parseInt(project.VersionCode)
-        versionName project.VersionName
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
     }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile files('libs/license.jar')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.supportVersion"
+    implementation files('libs/license.jar')
 }

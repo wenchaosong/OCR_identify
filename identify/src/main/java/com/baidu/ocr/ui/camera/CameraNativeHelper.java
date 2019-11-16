@@ -1,8 +1,15 @@
+/*
+ * Copyright (C) 2018 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.camera;
 
 import android.content.Context;
 
 import com.baidu.idcardquality.IDcardQualityProcess;
+
+/**
+ * Created by ruanshimin on 2018/1/23.
+ */
 
 public class CameraNativeHelper {
 
@@ -11,7 +18,7 @@ public class CameraNativeHelper {
          * 加载本地库异常回调
          *
          * @param errorCode 错误代码
-         * @param e         如果加载so异常则会有异常对象传入
+         * @param e 如果加载so异常则会有异常对象传入
          */
         void onError(int errorCode, Throwable e);
     }

@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+  -->
 <com.baidu.ocr.ui.camera.OCRCameraLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -41,9 +43,9 @@
         android:id="@+id/confirm_button"
         android:layout_width="60dp"
         android:layout_height="40dp"
+        android:layout_marginTop="@dimen/camera_top_margin"
         android:layout_marginEnd="@dimen/camera_right_margin"
         android:layout_marginRight="@dimen/camera_right_margin"
-        android:layout_marginTop="@dimen/camera_top_margin"
         android:padding="12dp"
         android:src="@drawable/bd_ocr_confirm" />
 
@@ -51,9 +53,9 @@
         android:id="@+id/cancel_button"
         android:layout_width="60dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="@dimen/camera_bottom_margin"
-        android:layout_marginLeft="@dimen/camera_left_margin"
         android:layout_marginStart="@dimen/camera_left_margin"
+        android:layout_marginLeft="@dimen/camera_left_margin"
+        android:layout_marginBottom="@dimen/camera_bottom_margin"
         android:padding="12dp"
         android:src="@drawable/bd_ocr_cancel" />
 

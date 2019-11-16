@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.util;
 
 import android.graphics.BitmapFactory;
@@ -5,7 +8,6 @@ import android.media.ExifInterface;
 import android.util.Log;
 
 public class ImageUtil {
-
     private static final String TAG = "CameraExif";
 
     public static int exifToDegrees(int exifOrientation) {

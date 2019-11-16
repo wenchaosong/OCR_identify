@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initAccessTokenWithAkSk() {
-        OCR.getInstance().initAccessTokenWithAkSk(
+        OCR.getInstance(this).initAccessTokenWithAkSk(
                 new OnResultListener<AccessToken>() {
                     @Override
                     public void onResult(AccessToken result) {
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initLicense() {
-        CameraNativeHelper.init(this, OCR.getInstance().getLicense(),
+        CameraNativeHelper.init(this, OCR.getInstance(this).getLicense(),
                 new CameraNativeHelper.CameraNativeInitCallback() {
                     @Override
                     public void onError(int errorCode, Throwable e) {
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
         param.setDetectDirection(true);
         // 设置图像参数压缩质量0-100, 越大图像质量越好但是请求时间越长。 不设置则默认值为20
         param.setImageQuality(40);
-        OCR.getInstance().recognizeIDCard(param, new OnResultListener<IDCardResult>() {
+        OCR.getInstance(this).recognizeIDCard(param, new OnResultListener<IDCardResult>() {
             @Override
             public void onResult(IDCardResult result) {
                 if (result != null) {
@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         param.setImageFile(new File(filePath));
 
         // 调用银行卡识别服务
-        OCR.getInstance().recognizeBankCard(param, new OnResultListener<BankCardResult>() {
+        OCR.getInstance(this).recognizeBankCard(param, new OnResultListener<BankCardResult>() {
             @Override
             public void onResult(BankCardResult result) {
                 if (result != null) {
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         // 设置其他参数
         param.putParam("detect_direction", true);
         // 调用驾驶证识别服务
-        OCR.getInstance().recognizeDrivingLicense(param, new OnResultListener<OcrResponseResult>() {
+        OCR.getInstance(this).recognizeDrivingLicense(param, new OnResultListener<OcrResponseResult>() {
             @Override
             public void onResult(OcrResponseResult result) {
                 // 调用成功，返回OcrResponseResult对象
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
     private void recVehicleCard(String filePath) {
         OcrRequestParams param = new OcrRequestParams();
         param.setImageFile(new File(filePath));
-        OCR.getInstance().recognizeVehicleLicense(param, new OnResultListener<OcrResponseResult>() {
+        OCR.getInstance(this).recognizeVehicleLicense(param, new OnResultListener<OcrResponseResult>() {
             @Override
             public void onResult(OcrResponseResult result) {
                 Log.d("MainActivity", result.getJsonRes());
@@ -385,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         CameraNativeHelper.release();
         // 释放内存资源
-        OCR.getInstance().release();
+        OCR.getInstance(this).release();
         super.onDestroy();
 
     }

@@ -1,4 +1,8 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.camera;
+
 
 import android.content.Context;
 import android.util.AttributeSet;

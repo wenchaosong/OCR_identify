@@ -1,4 +1,11 @@
+/*
+ * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
+ */
 package com.baidu.ocr.ui.crop;
+
+import java.io.IOException;
+
+import com.baidu.ocr.ui.util.ImageUtil;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,10 +21,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.WindowManager;
-
-import com.baidu.ocr.ui.util.ImageUtil;
-
-import java.io.IOException;
 
 public class CropView extends View {
 
@@ -105,8 +108,8 @@ public class CropView extends View {
     public Bitmap crop(Rect frame) {
         float scale = getScale();
 
-        float[] src = new float[]{frame.left, frame.top};
-        float[] desc = new float[]{0, 0};
+        float[] src = new float[] {frame.left, frame.top};
+        float[] desc = new float[] {0, 0};
 
         Matrix invertedMatrix = new Matrix();
         this.matrix.invert(invertedMatrix);
@@ -201,6 +204,9 @@ public class CropView extends View {
     int rotation = 0;
 
     public void rotate(int degrees) {
+        if (this.bitmap == null) {
+            return;
+        }
         Matrix matrix = new Matrix();
 
         int dx = this.bitmap.getWidth() / 2;
